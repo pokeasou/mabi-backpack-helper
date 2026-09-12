@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#142c3a">
+<title>倉庫計算器｜瑪奇M 背包小救星</title>
+<meta name="description" content="瑪奇M倉庫計算器，輸入手上持有的材料與數量，一鍵算出目前能完整製作的成品，以及還缺什麼材料。">
+<link rel="stylesheet" href="css/style.css">
+<script>(function(){try{var t=localStorage.getItem('mabi-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+</head>
+<body>
+
+<header class="global-header">
+  <a class="brand" href="index.html">
+    <span class="mark"><img src="images/LOGO/LOGO_01.png" alt="瑪奇M 背包小救星"></span>
+    <span>瑪奇M<small>背包小救星</small></span>
+  </a>
+  <div class="header-actions">
+    <button id="themeToggle" class="theme-toggle" type="button" aria-label="切換深色／淺色模式" title="切換深色／淺色模式">
+      <svg class="icon-moon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M20.742 13.045a8.088 8.088 0 0 1-2.077.27c-4.612 0-8.35-3.738-8.35-8.35 0-1.482.392-2.873 1.079-4.075A9.708 9.708 0 0 0 2.25 10.834a9.708 9.708 0 0 0 9.706 9.707 9.71 9.71 0 0 0 8.786-5.496Z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 4a1 1 0 0 1-1-1V1.75a1 1 0 1 1 2 0V3a1 1 0 0 1-1 1Zm0 15a1 1 0 0 1 1 1v1.25a1 1 0 1 1-2 0V20a1 1 0 0 1 1-1Zm9-7a1 1 0 0 1-1 1h-1.25a1 1 0 1 1 0-2H20a1 1 0 0 1 1 1ZM4.25 12a1 1 0 0 1-1 1H2a1 1 0 1 1 0-2h1.25a1 1 0 0 1 1 1Zm13.132-6.132a1 1 0 0 1 0 1.414l-.884.884a1 1 0 1 1-1.414-1.414l.884-.884a1 1 0 0 1 1.414 0ZM7.116 16.884a1 1 0 0 1 0 1.414l-.884.884a1 1 0 1 1-1.414-1.414l.884-.884a1 1 0 0 1 1.414 0Zm11.766 2.298a1 1 0 0 1-1.414 0l-.884-.884a1 1 0 1 1 1.414-1.414l.884.884a1 1 0 0 1 0 1.414ZM7.116 7.116a1 1 0 0 1-1.414 0l-.884-.884A1 1 0 1 1 6.232 4.82l.884.884a1 1 0 0 1 0 1.412ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z"/></svg>
+    </button>
+    <a href="database.html#sources">資料來源 ↗</a>
+  </div>
+</header>
+
+<div class="context-bar">
+  <nav class="global-nav" aria-label="全站導航">
+    <span class="disabled">攻略<em>即將推出</em></span>
+    <a href="database.html">生產配方</a>
+    <a href="items.html">素材圖鑑</a>
+    <a href="inventory.html" class="current">倉庫計算器</a>
+  </nav>
+</div>
+
+<main class="content" style="max-width:1000px;margin:0 auto;">
+  <div class="content-inner article-width" style="max-width:960px;">
+
+    <div class="intro">
+      <div>
+        <p class="eyebrow">INVENTORY CALCULATOR / 台服實測版</p>
+        <h1>我現在持有這些東西，可以做什麼？</h1>
+        <p>把手上的材料跟數量記錄下來，一鍵算出目前能完整製作的成品，以及只差一點點的配方還缺什麼。</p>
+      </div>
+    </div>
+
+    <div class="notice">
+      這一版只計算「直接材料」是否足夠，還沒有把中間產物的連鎖生產鏈算進去（例如原礦→錠→成品這種多層配方，之後會再擴充）。目前資料範圍為生產設施 Lv.4 及以下。持有數量會自動存在瀏覽器本機，不會不見。
+    </div>
+
+    <div class="inv-add">
+      <span aria-hidden="true" style="color:var(--text-2);">＋</span>
+      <input id="addSearch" type="search" autocomplete="off" placeholder="輸入材料或半成品名稱來加入庫存……">
+      <div id="addSuggest" class="inv-add-suggest" hidden></div>
+    </div>
+
+    <table class="inv-table">
+      <thead><tr><th style="width:60%;">物品</th><th>持有數量</th><th></th></tr></thead>
+      <tbody id="invBody"></tbody>
+    </table>
+
+    <button class="inv-calc-btn" id="calcBtn">計算可製作物</button>
+
+    <div id="calcResults"></div>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <span>資料整理：風堇 for 小米</span>
+  <span id="build-meta"></span>
+</footer>
+
+<script src="js/theme.js"></script>
+<script src="js/data.js"></script>
+<script src="js/inventory.js"></script>
+</body>
+</html>

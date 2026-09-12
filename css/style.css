@@ -1,0 +1,514 @@
+/* ===================================================================
+   瑪奇M 背包小救星 - 全站設計系統
+   Header(72px, 全站固定，首頁例外) / Context-Bar(56px, 需要的頁面才出現)
+   Sidebar(240px) / Main gutter(32~40px) / 文章 840px / 資料頁最大 1200px
+   IA：Header = 全站導航（我要去哪個功能）／Sidebar = 區域導航（這個功能內去哪）
+
+   配色一律用下面這組變數（Header／Context-Bar／Hero 是固定深色品牌色，
+   不隨淺色／深色模式變動；其餘內文區塊都吃這組變數，深色模式只要在
+   [data-theme="dark"] 裡覆寫變數即可，規則本身不用重寫）
+   =================================================================== */
+
+:root {
+  font-family: Inter, "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+  font-size: 16px;
+  color: var(--text);
+  background: var(--bg);
+
+  --bg: #f3f6f8;            /* 頁面／側欄底色 */
+  --surface: #ffffff;       /* 卡片、表格、輸入框等表面 */
+  --surface-2: #eef2f4;     /* 標籤／hover 等淺色填色 */
+  --surface-3: #f8fafb;     /* 材料格等更淺一階的填色 */
+  --text: #173243;          /* 主文字 */
+  --text-2: #5a707a;        /* 次要文字（說明、meta） */
+  --text-3: #8296a0;        /* 更淡的文字（footer、時間戳、占位符） */
+  --line: #dce4e9;          /* 邊框線 */
+  --accent: #086c71;        /* 主色（連結、強調文字） */
+  --accent-soft: #eaf3f4;   /* 徽章／材料命中 底色 */
+  --accent-strong: #125d65; /* 側欄主分類啟用中 底色 */
+  --accent-strong-2: #1c4c53; /* 側欄子分類啟用中 底色（比上面更深一階） */
+  --warn-bg: #fdecd9;       /* 未實裝標籤 底色 */
+  --warn-text: #a5490a;     /* 未實裝標籤 文字 */
+  --danger: #c15b4a;        /* 刪除／缺料 等警示文字 */
+
+  --header-h: 72px;
+  --context-h: 56px;
+  --sidebar-w: 240px;
+  --gutter: 32px;
+  --sticky-top: calc(var(--header-h) + var(--context-h)); /* 全站導覽列現在都在 Context-Bar，側欄一律往下多吸 56px */
+}
+
+/* 系統偏好深色時，只要頁面沒有被手動切成「淺色」，就先套用深色配色 */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #10161c;
+    --surface: #1a232b;
+    --surface-2: #222d36;
+    --surface-3: #1e2830;
+    --text: #dde6ea;
+    --text-2: #93a7b1;
+    --text-3: #6f8790;
+    --line: #2b3944;
+    --accent: #3fb6ae;
+    --accent-soft: #16333a;
+    --accent-strong: #1f8089;
+    --accent-strong-2: #17646c;
+    --warn-bg: #3a2413;
+    --warn-text: #e2954f;
+    --danger: #e0796a;
+  }
+}
+/* 手動切成「深色」：不管系統設定是什麼，都套用深色配色（右上角切換鈕控制這個屬性） */
+:root[data-theme="dark"] {
+  --bg: #10161c;
+  --surface: #1a232b;
+  --surface-2: #222d36;
+  --surface-3: #1e2830;
+  --text: #dde6ea;
+  --text-2: #93a7b1;
+  --text-3: #6f8790;
+  --line: #2b3944;
+  --accent: #3fb6ae;
+  --accent-soft: #16333a;
+  --accent-strong: #1f8089;
+  --accent-strong-2: #17646c;
+  --warn-bg: #3a2413;
+  --warn-text: #e2954f;
+  --danger: #e0796a;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; }
+button, input { font: inherit; }
+button, a { touch-action: manipulation; }
+button { cursor: pointer; }
+a { color: var(--accent); }
+button:focus-visible, a:focus-visible, input:focus-visible, summary:focus-visible {
+  outline: 3px solid #dd9f37;
+  outline-offset: 3px;
+}
+/* 切換深色／淺色模式時，讓顏色平滑過渡，不要整片畫面瞬間跳色 */
+body, .sidebar, .sidebar-search .search-line, .recipe, .entry-card, .item-card,
+.item-detail-header, .usage-row, .recipe-source-box, .inv-add, .inv-add-suggest,
+.inv-table, .inv-row, .empty, .notice, .badge, .ni-tag, .level-picker button,
+#active-filter #sortToggle, .pagination button {
+  transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+}
+
+/* ===================================================================
+   Global Header（72px，全站固定規格，只有首頁的 Hero 區塊比較大，
+   Header 本身高度不變）
+   這一區塊是固定的深色品牌色，淺色／深色模式下都長一樣
+   =================================================================== */
+.global-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  height: var(--header-h);
+  background: #142c3a;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  padding: 0 24px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: white;
+  font-weight: 650;
+  letter-spacing: .04em;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.brand .mark {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+}
+.brand .mark img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.brand small { display: block; font-size: .68rem; color: #bed0d9; font-weight: 400; }
+
+/* 全站導航：目前只有「資料庫」真正做好，其餘先用 disabled 樣式佔位，
+   之後功能做好了只要把 disabled 拿掉、補上 href 即可，版型不用重做
+   現在整排都移到 Context-Bar 裡，全站每一頁都會出現 */
+.global-nav { display: flex; gap: 4px; }
+.global-nav a, .global-nav span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border-radius: 6px;
+  font-size: .9rem;
+  text-decoration: none;
+  color: #d7e6ec;
+}
+.global-nav a:hover { background: rgba(255,255,255,.1); }
+.global-nav a.current { background: rgba(255,255,255,.14); color: white; font-weight: 600; }
+.global-nav span.disabled { color: #5d7480; cursor: default; }
+.global-nav span.disabled em { font-style: normal; font-size: .68rem; background: rgba(255,255,255,.08); padding: 2px 6px; border-radius: 8px; }
+
+.header-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.header-actions a { color: #d7e6ec; font-size: .82rem; text-decoration: none; white-space: nowrap; }
+
+/* 深色／淺色模式切換鈕：放在 header-actions 裡，圖示本身用 currentColor，
+   兩種模式的圖示都畫好，靠 [data-theme] 切換顯示哪一個，JS 只需要切屬性 */
+.theme-toggle {
+  display: grid; place-items: center;
+  width: 32px; height: 32px; flex-shrink: 0;
+  border: 0; border-radius: 6px;
+  background: rgba(255,255,255,.08); color: #d7e6ec;
+}
+.theme-toggle:hover { background: rgba(255,255,255,.16); }
+.theme-toggle .icon-sun { display: none; }
+:root[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+:root[data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+
+/* ===================================================================
+   Context / Search Bar（56px，只有需要搜尋的功能頁才出現，吸在 Header 下方）
+   這一區塊也是固定的深色品牌色，淺色／深色模式下都長一樣
+   =================================================================== */
+.context-bar {
+  position: sticky;
+  top: var(--header-h);
+  z-index: 35;
+  height: var(--context-h);
+  background: #1b3a4a;
+  border-bottom: 1px solid #2a4d5e;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 24px;
+}
+.context-bar .search-line {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 6px;
+  padding: 0 12px;
+  height: 40px;
+  max-width: 640px;
+}
+.context-bar .search-line:focus-within { border-color: #dd9f37; }
+.context-bar .search-line span { color: #bed0d9; font-size: 1.2rem; }
+.context-bar .search-line input {
+  flex: 1; min-width: 0; border: 0; background: transparent; color: white; outline: none;
+}
+.context-bar .search-line input::placeholder { color: #8ea3ab; }
+.context-bar .modes { display: flex; gap: 4px; flex-shrink: 0; }
+.context-bar .modes button {
+  background: none; border: 1px solid transparent; color: #bed0d9;
+  border-radius: 5px; padding: 6px 10px; font-size: .8rem;
+}
+.context-bar .modes button[aria-selected=true] { color: white; background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.28); }
+.context-bar .exact-toggle { display: flex; align-items: center; gap: 5px; font-size: .78rem; color: #bed0d9; flex-shrink: 0; white-space: nowrap; }
+.context-bar .exact-toggle input { accent-color: #dd9f37; }
+.context-bar .source-link { color: #b9d0d8; font-size: .8rem; text-decoration: none; flex-shrink: 0; white-space: nowrap; }
+
+/* 側欄裡的搜尋區塊（跟側欄背景搭，吃 --surface / --line 變數） */
+.sidebar-search { margin-bottom: 14px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+.sidebar-search .search-line {
+  display: flex; align-items: center; gap: 8px; background: var(--surface);
+  border: 1px solid var(--line); border-radius: 6px; padding: 0 10px; height: 38px; margin-bottom: 8px;
+}
+.sidebar-search .search-line:focus-within { border-color: var(--accent); }
+.sidebar-search .search-line span { color: var(--text-3); font-size: 1.1rem; }
+.sidebar-search .search-line input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--text); outline: none; font-size: .85rem; }
+.sidebar-search .search-line button { border: 0; background: var(--surface-2); color: var(--text-2); border-radius: 4px; padding: 5px 8px; font-size: .74rem; }
+.sidebar-search .exact-toggle { display: flex; align-items: center; gap: 5px; font-size: .78rem; color: var(--text-2); }
+.sidebar-search .exact-toggle input { accent-color: var(--accent); }
+.sidebar-search .switch-link { display: block; margin-top: 8px; font-size: .78rem; color: var(--accent); text-decoration: none; }
+
+/* ===================================================================
+   版面骨架：側欄（區域導航）＋ 正文
+   =================================================================== */
+.layout { display: flex; align-items: flex-start; }
+
+.sidebar {
+  position: sticky;
+  top: var(--sticky-top);
+  align-self: flex-start;
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  max-height: calc(100vh - var(--sticky-top));
+  overflow-y: auto;
+  padding: 20px 18px;
+  border-right: 1px solid var(--line);
+  background: var(--bg);
+}
+.sidebar h2 { font-size: .8rem; color: var(--text-2); margin: 14px 0 10px; letter-spacing: .02em; }
+.sidebar h2:first-child { margin-top: 0; }
+/* 「生產技能／製作類別」不要貼齊搜尋區塊，留約兩行文字的空白距離 */
+#categoryHeading { margin-top: 40px; }
+.sidebar nav { display: flex; flex-direction: column; gap: 3px; }
+.sidebar nav button, .sidebar nav a {
+  border: 0;
+  background: transparent;
+  color: var(--text-2);
+  padding: 10px 12px;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+  border-radius: 5px;
+  font-size: .85rem;
+  text-decoration: none;
+  height: 42px;
+}
+.sidebar nav button:hover, .sidebar nav a:hover { background: var(--surface-2); }
+.sidebar nav button.active, .sidebar nav a.active { background: var(--accent-strong); color: white; }
+.sidebar nav button span:last-child { font-size: .72rem; opacity: .8; }
+.sidebar nav a.sub, .sidebar nav button.sub { padding-left: 28px; font-size: .8rem; height: 36px; } /* 子分類縮排 16px（在 12px 基礎上再加） */
+.sidebar nav button.sub.active { background: var(--accent-strong-2); }
+.sidebar nav button.sub .branch { color: var(--text-3); margin-right: 2px; flex-shrink: 0; } /* 子項目前方的分支符號 */
+
+/* 可展開/收合的分類列：主按鈕 + 右側開合按鈕 各自獨立點擊 */
+.cat-row { display: flex; align-items: stretch; gap: 2px; }
+.cat-row button.cat-main { flex: 1; min-width: 0; }
+.cat-toggle {
+  flex-shrink: 0; width: 30px; height: 42px; border: 0; background: transparent;
+  color: var(--text-2); border-radius: 5px; font-size: 1rem; font-weight: 600; line-height: 1;
+}
+.cat-toggle:hover { background: var(--surface-2); }
+.cat-toggle[aria-expanded="true"] { color: var(--accent-strong); }
+
+.content {
+  flex: 1;
+  min-width: 0;
+  padding: var(--gutter);
+}
+.content-inner { max-width: 1200px; }
+.content-inner.article-width { max-width: 840px; }
+
+.intro { display: flex; justify-content: space-between; gap: 24px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+.eyebrow { font-size: .72rem; letter-spacing: .12em; color: var(--text-2); font-weight: 700; margin: 0 0 10px; }
+h1 { font-size: clamp(1.5rem, 2.6vw, 2rem); letter-spacing: -.03em; margin: 0 0 10px; }
+.intro p:not(.eyebrow) { color: var(--text-2); margin: 0; line-height: 1.7; }
+.stats { display: flex; gap: 24px; flex-shrink: 0; }
+.stats strong { font-family: Georgia, serif; display: block; font-size: 1.7rem; font-weight: 400; color: var(--accent); }
+.stats span { font-size: .76rem; color: var(--text-2); display: block; margin-top: 4px; }
+
+.notice { font-size: .84rem; line-height: 1.8; background: var(--surface-2); border-left: 3px solid var(--text-2); padding: 12px 16px; margin-bottom: 22px; border-radius: 0 4px 4px 0; }
+.legend { display: inline-flex; gap: 16px; margin-top: 6px; flex-wrap: wrap; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+.suggestions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+.suggestions button { background: var(--surface-2); border: 1px solid var(--line); color: var(--accent); border-radius: 4px; padding: 6px 10px; font-size: .8rem; }
+.suggestions small { color: var(--text-2); margin-left: 5px; }
+
+.result-bar { display: flex; flex-wrap: wrap; gap: 15px; align-items: center; padding: 6px 0 14px; }
+.result-bar h2 { margin: 0; font-size: 1.1rem; }
+.result-bar > span { font-size: .84rem; color: var(--text-2); margin-left: auto; }
+
+/* 等級揀選器：放在分類標題右側，直接選要看哪個等級 */
+.level-picker { display: flex; gap: 5px; flex-wrap: wrap; }
+.level-picker button {
+  border: 1px solid var(--line); background: var(--surface); color: var(--text-2);
+  border-radius: 14px; padding: 5px 13px; font-size: .78rem;
+}
+.level-picker button:hover { border-color: var(--accent); color: var(--accent); }
+.level-picker button.active { background: var(--accent-strong); color: white; border-color: var(--accent-strong); }
+.subcat-picker { margin: -6px 0 14px; }
+#active-filter { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: .84rem; color: var(--accent); line-height: 1.8; margin-bottom: 8px; }
+#active-filter button { border: 0; background: none; color: var(--accent); text-decoration: underline; cursor: pointer; }
+#active-filter #sortToggle {
+  margin-left: auto; flex-shrink: 0; border: 1px solid var(--line); background: var(--surface); color: var(--text-2);
+  border-radius: 5px; padding: 5px 12px; text-decoration: none; font-size: .8rem;
+}
+#active-filter #sortToggle:hover { border-color: var(--accent); color: var(--accent); }
+
+.recipe { background: var(--surface); border: 1px solid var(--line); border-radius: 7px; margin-bottom: 12px; padding: 20px 22px; display: grid; grid-template-columns: minmax(170px,1fr) minmax(200px,1.6fr); gap: 20px; }
+.badge { display: inline-block; font-size: .74rem; color: var(--accent); background: var(--accent-soft); padding: 4px 7px; border-radius: 3px; }
+.ni-tag { display: inline-block; font-size: .7rem; color: var(--warn-text); background: var(--warn-bg); padding: 2px 6px; border-radius: 3px; margin-left: 6px; vertical-align: middle; white-space: nowrap; font-weight: 600; }
+.recipe h3 { font-size: 1.02rem; margin: 12px 0 5px; line-height: 1.5; overflow-wrap: anywhere; }
+.korean { font-size: .78rem; color: var(--text-3); line-height: 1.6; overflow-wrap: anywhere; }
+.meta { font-size: .78rem; line-height: 1.8; color: var(--text-2); margin-top: 12px; }
+.ingredients-label { font-size: .74rem; color: var(--text-3); margin-bottom: 9px; }
+.ingredients { display: flex; flex-wrap: wrap; gap: 7px; }
+.ingredient { border: 1px solid var(--line); background: var(--surface-3); padding: 8px 10px; border-radius: 4px; text-align: left; max-width: 100%; display: flex; gap: 10px; justify-content: space-between; align-items: center; color: var(--text); font-size: .84rem; }
+.ingredient small { display: block; font-size: .72rem; color: var(--text-3); line-height: 1.6; }
+.ingredient b { color: var(--accent); white-space: nowrap; }
+.ingredient.match { border-color: var(--accent); background: var(--accent-soft); }
+.ingredient:hover { border-color: var(--accent); }
+.recipe details { font-size: .78rem; color: var(--text-2); margin-top: 14px; line-height: 1.7; }
+.recipe details p { margin-bottom: 0; overflow-wrap: anywhere; }
+summary { cursor: pointer; }
+
+.pagination { display: flex; gap: 20px; align-items: center; justify-content: center; margin: 25px 0; }
+.pagination button { border: 1px solid var(--line); border-radius: 4px; background: var(--surface); color: var(--text-2); padding: 9px 16px; font-size: .84rem; }
+.pagination button:disabled { opacity: .35; cursor: default; }
+#page-info { font-size: .84rem; color: var(--text-2); }
+
+.empty { padding: 45px 22px; text-align: center; background: var(--surface); border: 1px dashed var(--line); line-height: 1.9; color: var(--text-2); border-radius: 6px; }
+.empty h3 { color: var(--text); }
+.empty button { padding: 10px 17px; border: 0; background: var(--accent-strong); color: #fff; border-radius: 5px; }
+
+#sources { margin-top: 35px; border-top: 1px solid var(--line); padding: 23px 0; font-size: .84rem; line-height: 1.9; color: var(--text-2); }
+#sources > summary { font-weight: 600; color: var(--text); }
+#sources p { max-width: 1000px; }
+#coverage { padding-top: 15px; }
+
+.site-footer { font-size: .74rem; color: var(--text-3); border-top: 1px solid var(--line); padding: 20px var(--gutter); display: flex; justify-content: space-between; gap: 15px; }
+
+/* ===================================================================
+   首頁專用：Hero / 入口卡片 / 最近更新
+   （首頁是 --header-h 72px 固定規格「唯一的例外」：Header 高度不變，
+   但下面多一段自己的 Hero 區塊；Hero 跟 Header 一樣是固定深色品牌色）
+   =================================================================== */
+.hero {
+  background: linear-gradient(180deg, #142c3a 0%, #1b3a4a 100%);
+  color: white;
+  padding: 56px 24px 64px;
+  text-align: center;
+}
+.hero h1 { color: white; font-size: clamp(1.6rem, 3vw, 2.3rem); margin: 0 0 22px; letter-spacing: -.02em; }
+.hero-search {
+  max-width: 640px;
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: 8px;
+  padding: 4px 6px 4px 18px;
+  height: 52px;
+}
+.hero-search span { color: #bed0d9; font-size: 1.3rem; }
+.hero-search input { flex: 1; min-width: 0; border: 0; background: transparent; color: white; outline: none; font-size: .95rem; }
+.hero-search input::placeholder { color: #93a9b1; }
+.hero-search button { border: 0; background: #dd9f37; color: #1c2b32; font-weight: 700; border-radius: 5px; padding: 0 20px; height: 42px; }
+.hero-hot { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; font-size: .82rem; }
+.hero-hot span.label { color: #93a9b1; }
+.hero-hot a { color: #cfe4ea; text-decoration: none; padding: 4px 10px; border-radius: 12px; background: rgba(255,255,255,.08); }
+.hero-hot a:hover { background: rgba(255,255,255,.16); }
+
+.home-main { max-width: 1200px; margin: 0 auto; padding: 44px var(--gutter); }
+.entry-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 48px; }
+.entry-card {
+  display: block; text-decoration: none; color: inherit;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 26px;
+  transition: border-color .15s, transform .15s, background-color .15s;
+}
+.entry-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.entry-card .icon { font-size: 1.8rem; margin-bottom: 14px; }
+.entry-card h3 { margin: 0 0 8px; font-size: 1.05rem; color: var(--text); }
+.entry-card p { margin: 0; font-size: .85rem; color: var(--text-2); line-height: 1.6; }
+.entry-card.disabled { opacity: .55; cursor: default; }
+.entry-card.disabled:hover { border-color: var(--line); transform: none; }
+.entry-card .soon { display: inline-block; margin-top: 10px; font-size: .68rem; background: var(--surface-2); color: var(--text-2); padding: 2px 8px; border-radius: 8px; }
+
+.recent-updates h2 { font-size: 1.05rem; margin: 0 0 16px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.recent-updates ul { list-style: none; margin: 0; padding: 0; }
+.recent-updates li { display: flex; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--line); font-size: .88rem; }
+.recent-updates time { color: var(--text-3); font-size: .78rem; flex-shrink: 0; width: 90px; }
+.recent-updates .desc { color: var(--text); }
+
+/* ===================================================================
+   素材圖鑑：清單卡片 + 物品詳情頁
+   =================================================================== */
+.item-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+.item-card {
+  display: block; text-decoration: none; text-align: left;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px;
+  cursor: pointer;
+}
+.item-card:hover { border-color: var(--accent); }
+.item-card .item-card-zh { font-size: .92rem; display: block; margin-bottom: 2px; }
+.item-card .item-card-kr { font-size: .72rem; color: var(--text-3); }
+.item-card .item-card-tags { margin-top: 6px; }
+
+.item-detail-header { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 24px 26px; margin-bottom: 24px; }
+.item-detail-header .korean { font-size: .85rem; margin-top: 2px; }
+.item-detail-header h1 { margin: 4px 0 10px; }
+.item-detail-header .tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+
+.item-section { margin-bottom: 32px; }
+.item-section h2 { font-size: 1rem; margin: 0 0 14px; padding-bottom: 10px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px; }
+.item-section h2 .q { font-size: .74rem; color: var(--text-3); font-weight: 400; }
+.item-empty-state {
+  font-size: .84rem; color: var(--text-2); background: var(--surface-2); border: 1px dashed var(--line);
+  border-radius: 6px; padding: 16px 18px; line-height: 1.8;
+}
+.usage-list { display: flex; flex-direction: column; gap: 8px; }
+.usage-row {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 10px 14px;
+  text-decoration: none; color: inherit;
+}
+.usage-row:hover { border-color: var(--accent); }
+.usage-row .qty { color: var(--accent); font-size: .82rem; white-space: nowrap; flex-shrink: 0; }
+.recipe-source-box { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 16px 18px; }
+
+/* ===================================================================
+   倉庫計算器
+   =================================================================== */
+.inv-add {
+  display: flex; gap: 10px; align-items: center; background: var(--surface); border: 1px solid var(--line);
+  border-radius: 8px; padding: 14px 16px; margin-bottom: 18px; position: relative;
+}
+.inv-add input[type=search] { flex: 1; min-width: 0; border: 1px solid var(--line); border-radius: 5px; padding: 9px 12px; background: var(--surface); color: var(--text); }
+.inv-add-suggest {
+  position: absolute; top: 100%; left: 16px; right: 16px; background: var(--surface); border: 1px solid var(--line);
+  border-radius: 0 0 8px 8px; box-shadow: 0 8px 18px rgba(0,0,0,.16); z-index: 5; max-height: 260px; overflow-y: auto;
+}
+.inv-add-suggest button { display: block; width: 100%; text-align: left; border: 0; background: none; color: var(--text); padding: 9px 14px; font-size: .85rem; }
+.inv-add-suggest button:hover { background: var(--surface-2); }
+
+.inv-table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; margin-bottom: 20px; }
+.inv-table th { text-align: left; font-size: .76rem; color: var(--text-2); font-weight: 500; padding: 10px 14px; border-bottom: 1px solid var(--line); background: var(--surface-2); }
+.inv-table td { padding: 8px 14px; border-bottom: 1px solid var(--line); font-size: .88rem; }
+.inv-table input[type=number] { width: 90px; border: 1px solid var(--line); border-radius: 5px; padding: 6px 8px; background: var(--surface); color: var(--text); }
+.inv-table button.remove { border: 0; background: none; color: var(--danger); font-size: .8rem; }
+.inv-empty { color: var(--text-3); font-size: .84rem; padding: 20px; text-align: center; }
+
+.inv-calc-btn { border: 0; background: var(--accent); color: white; font-weight: 600; padding: 12px 22px; border-radius: 6px; font-size: .92rem; margin-bottom: 30px; }
+.inv-calc-btn:hover { filter: brightness(1.08); }
+
+.inv-results-group { margin-bottom: 28px; }
+.inv-results-group h2 { font-size: 1rem; margin: 0 0 12px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+.inv-row {
+  display: flex; align-items: center; gap: 14px; background: var(--surface); border: 1px solid var(--line);
+  border-radius: 6px; padding: 12px 16px; margin-bottom: 8px;
+}
+.inv-row .status { width: 22px; flex-shrink: 0; text-align: center; font-size: 1rem; }
+.inv-row.ok .status { color: #1B9653; }
+.inv-row.partial .status { color: #c98a1c; }
+.inv-row .name { flex: 1; min-width: 0; }
+.inv-row .count { font-size: .82rem; color: var(--accent); white-space: nowrap; }
+.inv-row .missing { font-size: .78rem; color: var(--danger); margin-top: 3px; }
+
+/* ===================================================================
+   響應式斷點
+   =================================================================== */
+@media (max-width: 1200px) {
+  :root { --sidebar-w: 210px; --gutter: 22px; }
+}
+
+@media (max-width: 900px) {
+  .layout { display: block; }
+  .sidebar {
+    position: static; width: auto; max-height: none; overflow: visible;
+    border-right: 0; border-bottom: 1px solid var(--line);
+    display: flex; flex-wrap: wrap; gap: 16px;
+  }
+  .sidebar nav { flex-direction: row; overflow-x: auto; }
+  .sidebar-search { flex-basis: 100%; margin-bottom: 10px; padding-bottom: 12px; }
+  .global-header { flex-wrap: wrap; height: auto; min-height: var(--header-h); padding: 12px 16px; }
+  .context-bar { flex-wrap: wrap; height: auto; padding: 10px 16px; position: static; }
+  .global-nav { flex-wrap: wrap; }
+  .content { padding: 20px; }
+  .recipe { grid-template-columns: 1fr; gap: 14px; }
+  .entry-cards { grid-template-columns: 1fr; }
+  .hero { padding: 40px 18px 48px; }
+}

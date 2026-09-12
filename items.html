@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#142c3a">
+<title>素材圖鑑｜瑪奇M 背包小救星</title>
+<meta name="description" content="瑪奇M素材圖鑑，查詢單一物品的取得方式，以及哪些生產配方會用到這個材料，資料來自玩家自行截圖台服畫面整理。">
+<link rel="stylesheet" href="css/style.css">
+<script>(function(){try{var t=localStorage.getItem('mabi-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+</head>
+<body>
+
+<header class="global-header">
+  <a class="brand" href="index.html">
+    <span class="mark"><img src="images/LOGO/LOGO_01.png" alt="瑪奇M 背包小救星"></span>
+    <span>瑪奇M<small>背包小救星</small></span>
+  </a>
+  <div class="header-actions">
+    <button id="themeToggle" class="theme-toggle" type="button" aria-label="切換深色／淺色模式" title="切換深色／淺色模式">
+      <svg class="icon-moon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M20.742 13.045a8.088 8.088 0 0 1-2.077.27c-4.612 0-8.35-3.738-8.35-8.35 0-1.482.392-2.873 1.079-4.075A9.708 9.708 0 0 0 2.25 10.834a9.708 9.708 0 0 0 9.706 9.707 9.71 9.71 0 0 0 8.786-5.496Z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 4a1 1 0 0 1-1-1V1.75a1 1 0 1 1 2 0V3a1 1 0 0 1-1 1Zm0 15a1 1 0 0 1 1 1v1.25a1 1 0 1 1-2 0V20a1 1 0 0 1 1-1Zm9-7a1 1 0 0 1-1 1h-1.25a1 1 0 1 1 0-2H20a1 1 0 0 1 1 1ZM4.25 12a1 1 0 0 1-1 1H2a1 1 0 1 1 0-2h1.25a1 1 0 0 1 1 1Zm13.132-6.132a1 1 0 0 1 0 1.414l-.884.884a1 1 0 1 1-1.414-1.414l.884-.884a1 1 0 0 1 1.414 0ZM7.116 16.884a1 1 0 0 1 0 1.414l-.884.884a1 1 0 1 1-1.414-1.414l.884-.884a1 1 0 0 1 1.414 0Zm11.766 2.298a1 1 0 0 1-1.414 0l-.884-.884a1 1 0 1 1 1.414-1.414l.884.884a1 1 0 0 1 0 1.414ZM7.116 7.116a1 1 0 0 1-1.414 0l-.884-.884A1 1 0 1 1 6.232 4.82l.884.884a1 1 0 0 1 0 1.412ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z"/></svg>
+    </button>
+    <a href="database.html#sources">資料來源 ↗</a>
+  </div>
+</header>
+
+<div class="context-bar">
+  <nav class="global-nav" aria-label="全站導航">
+    <span class="disabled">攻略<em>即將推出</em></span>
+    <a href="database.html">生產配方</a>
+    <a href="items.html" class="current">素材圖鑑</a>
+    <a href="inventory.html">倉庫計算器</a>
+  </nav>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-search">
+      <div class="search-line">
+        <span aria-hidden="true">⌕</span>
+        <input id="search" type="search" autocomplete="off" placeholder="搜尋物品名稱">
+        <button id="clear" type="button">清除</button>
+      </div>
+    </div>
+    <h2>物品分類</h2>
+    <nav id="categories" aria-label="物品分類"></nav>
+  </aside>
+
+  <main class="content">
+    <div class="content-inner" id="contentInner">
+      <!-- 由 js/items.js 依網址參數渲染「清單瀏覽」或「單一物品詳情」 -->
+      <div class="empty">正在讀取資料…</div>
+    </div>
+  </main>
+</div>
+
+<footer class="site-footer">
+  <span>資料整理：風堇 for 小米</span>
+  <span id="build-meta"></span>
+</footer>
+
+<script src="js/theme.js"></script>
+<script src="js/data.js"></script>
+<script src="js/items.js"></script>
+</body>
+</html>

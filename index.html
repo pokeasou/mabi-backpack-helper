@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#142c3a">
+<title>瑪奇M 背包小救星</title>
+<meta name="description" content="瑪奇M玩家自製小工具，整理生產配方、素材取得方式與倉庫計算器，資料來自玩家自行截圖台服畫面整理。">
+<link rel="stylesheet" href="css/style.css">
+<script>(function(){try{var t=localStorage.getItem('mabi-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+</head>
+<body>
+
+<!-- Global Header：品牌識別，72px，全站固定規格（首頁是唯一例外：下面多接一段 Hero） -->
+<header class="global-header">
+  <a class="brand" href="index.html">
+    <span class="mark"><img src="images/LOGO/LOGO_01.png" alt="瑪奇M 背包小救星"></span>
+    <span>瑪奇M<small>背包小救星</small></span>
+  </a>
+  <div class="header-actions">
+    <button id="themeToggle" class="theme-toggle" type="button" aria-label="切換深色／淺色模式" title="切換深色／淺色模式">
+      <svg class="icon-moon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M20.742 13.045a8.088 8.088 0 0 1-2.077.27c-4.612 0-8.35-3.738-8.35-8.35 0-1.482.392-2.873 1.079-4.075A9.708 9.708 0 0 0 2.25 10.834a9.708 9.708 0 0 0 9.706 9.707 9.71 9.71 0 0 0 8.786-5.496Z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 4a1 1 0 0 1-1-1V1.75a1 1 0 1 1 2 0V3a1 1 0 0 1-1 1Zm0 15a1 1 0 0 1 1 1v1.25a1 1 0 1 1-2 0V20a1 1 0 0 1 1-1Zm9-7a1 1 0 0 1-1 1h-1.25a1 1 0 1 1 0-2H20a1 1 0 0 1 1 1ZM4.25 12a1 1 0 0 1-1 1H2a1 1 0 1 1 0-2h1.25a1 1 0 0 1 1 1Zm13.132-6.132a1 1 0 0 1 0 1.414l-.884.884a1 1 0 1 1-1.414-1.414l.884-.884a1 1 0 0 1 1.414 0ZM7.116 16.884a1 1 0 0 1 0 1.414l-.884.884a1 1 0 1 1-1.414-1.414l.884-.884a1 1 0 0 1 1.414 0Zm11.766 2.298a1 1 0 0 1-1.414 0l-.884-.884a1 1 0 1 1 1.414-1.414l.884.884a1 1 0 0 1 0 1.414ZM7.116 7.116a1 1 0 0 1-1.414 0l-.884-.884A1 1 0 1 1 6.232 4.82l.884.884a1 1 0 0 1 0 1.412ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Z"/></svg>
+    </button>
+    <a href="#sources-note">關於這個小工具 ↗</a>
+  </div>
+</header>
+
+<!-- Context-Bar：全站導航（我要去哪個功能），吸在 Header 下方 -->
+<div class="context-bar">
+  <nav class="global-nav" aria-label="全站導航">
+    <span class="disabled">攻略<em>即將推出</em></span>
+    <a href="database.html">生產配方</a>
+    <a href="items.html">素材圖鑑</a>
+    <a href="inventory.html">倉庫計算器</a>
+  </nav>
+</div>
+
+<!-- Hero：首頁專屬的大搜尋入口，其餘頁面都沒有這一段 -->
+<section class="hero">
+  <h1>今天要找什麼？</h1>
+  <form class="hero-search" id="heroSearchForm">
+    <span aria-hidden="true">⌕</span>
+    <input id="heroSearchInput" type="search" autocomplete="off" placeholder="搜尋素材、配方、技能……">
+    <button type="submit">搜尋</button>
+  </form>
+  <div class="hero-hot" id="heroHot">
+    <span class="label">熱門查詢：</span>
+  </div>
+</section>
+
+<main class="home-main">
+
+  <div class="entry-cards">
+    <div class="entry-card disabled" aria-disabled="true">
+      <div class="icon">📖</div>
+      <h3>攻略</h3>
+      <p>「這個遊戲要怎麼玩？」新手上路、生產技能、系統與日常規劃等文章整理。</p>
+      <span class="soon">即將推出</span>
+    </div>
+    <a class="entry-card" href="database.html">
+      <div class="icon">🧪</div>
+      <h3>生產配方</h3>
+      <p>「這個東西怎麼做？」輸入成品名稱，查詢製作配方、所需材料、技能與等級。</p>
+    </a>
+    <a class="entry-card" href="items.html">
+      <div class="icon">🔍</div>
+      <h3>素材圖鑑</h3>
+      <p>「這東西去哪裡拿？又能拿來做什麼？」查一個物品的取得方式，以及所有用得到它的配方。</p>
+    </a>
+    <a class="entry-card" href="inventory.html">
+      <div class="icon">📦</div>
+      <h3>倉庫計算器</h3>
+      <p>「我現在這些東西能做什麼？」輸入持有材料與數量，算出目前可完整製作的成品。</p>
+    </a>
+  </div>
+
+  <div class="recent-updates">
+    <h2>最近更新</h2>
+    <ul id="recentUpdates"></ul>
+  </div>
+
+  <p id="sources-note" style="font-size:.8rem;color:var(--text-3);margin-top:40px;line-height:1.8;">
+    資料來源：玩家自行截圖台服遊戲畫面，逐字辨識、人工複核後整理而成，非官方審核資料，可能有漏項或誤讀。
+  </p>
+</main>
+
+<footer class="site-footer">
+  <span>資料整理：風堇 for 小米</span>
+  <span id="build-meta"></span>
+</footer>
+
+<script src="js/theme.js"></script>
+<script src="js/data.js"></script>
+<script src="js/home.js"></script>
+</body>
+</html>
