@@ -23,10 +23,10 @@
   --text-2: #5a707a;        /* 次要文字（說明、meta） */
   --text-3: #8296a0;        /* 更淡的文字（footer、時間戳、占位符） */
   --line: #dce4e9;          /* 邊框線 */
-  --accent: #086c71;        /* 主色（連結、強調文字） */
-  --accent-soft: #eaf3f4;   /* 徽章／材料命中 底色 */
-  --accent-strong: #125d65; /* 側欄主分類啟用中 底色 */
-  --accent-strong-2: #1c4c53; /* 側欄子分類啟用中 底色（比上面更深一階） */
+  --accent: #086166;        /* 主色（連結、強調文字），跟頁首 Banner 同一個顏色 */
+  --accent-soft: #e1eeee;   /* 徽章／材料命中 底色 */
+  --accent-strong: #054a4e; /* 側欄主分類啟用中 底色 */
+  --accent-strong-2: #033a3d; /* 側欄子分類啟用中 底色（比上面更深一階） */
   --warn-bg: #fdecd9;       /* 未實裝標籤 底色 */
   --warn-text: #a5490a;     /* 未實裝標籤 文字 */
   --danger: #c15b4a;        /* 刪除／缺料 等警示文字 */
@@ -49,10 +49,10 @@
     --text-2: #93a7b1;
     --text-3: #6f8790;
     --line: #2b3944;
-    --accent: #3fb6ae;
-    --accent-soft: #16333a;
-    --accent-strong: #1f8089;
-    --accent-strong-2: #17646c;
+    --accent: #35b8c0;
+    --accent-soft: #123f42;
+    --accent-strong: #14818a;
+    --accent-strong-2: #0f6b73;
     --warn-bg: #3a2413;
     --warn-text: #e2954f;
     --danger: #e0796a;
@@ -105,7 +105,7 @@ body, .sidebar, .sidebar-search .search-line, .recipe, .entry-card, .item-card,
   top: 0;
   z-index: 40;
   height: var(--header-h);
-  background: #142c3a;
+  background: #086166;
   color: white;
   display: flex;
   align-items: center;
@@ -178,8 +178,8 @@ body, .sidebar, .sidebar-search .search-line, .recipe, .entry-card, .item-card,
   top: var(--header-h);
   z-index: 35;
   height: var(--context-h);
-  background: #1b3a4a;
-  border-bottom: 1px solid #2a4d5e;
+  background: #0b7981;
+  border-bottom: 1px solid #14939c;
   display: flex;
   align-items: center;
   gap: 16px;
@@ -366,7 +366,7 @@ summary { cursor: pointer; }
    但下面多一段自己的 Hero 區塊；Hero 跟 Header 一樣是固定深色品牌色）
    =================================================================== */
 .hero {
-  background: linear-gradient(180deg, #142c3a 0%, #1b3a4a 100%);
+  background: linear-gradient(180deg, #086166 0%, #0b7981 100%);
   color: white;
   padding: 56px 24px 64px;
   text-align: center;
