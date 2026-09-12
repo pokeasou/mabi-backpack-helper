@@ -143,8 +143,9 @@
 
     // 排序：先依「加工機等級」（設施等級）由低到高排，同機器等級內再依「技能需求」排，
     // 再同技能等級內依「材料層級」排（基礎素材優先），最後同層級的用名稱排序，讓相似物品自然排在一起
+    // 沒有記載設施等級（畫面上不會顯示 Lv.X）視為第 0 級，排在最上方，不是排最後
     // 點右上角的排序按鈕可以整組反過來（由高到低）
-    const compareRecipes = (a, b) => (a.level ?? Infinity) - (b.level ?? Infinity)
+    const compareRecipes = (a, b) => (a.level ?? 0) - (b.level ?? 0)
       || skillLevelOf(a) - skillLevelOf(b)
       || tierByName.get(a.name) - tierByName.get(b.name)
       || a.name.localeCompare(b.name, 'zh-Hant');
