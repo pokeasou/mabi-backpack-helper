@@ -1,6 +1,6 @@
 // ===================================================================
 // 瑪奇M 背包小救星 - 生產配方頁互動邏輯
-// 資料來源：js/data.js（window.CRAFT_DATA，玩家自行截圖台服畫面辨識而來）
+// 資料來源：js/data.js（window.CRAFT_DATA，整理自台港澳客戶端資料）
 // 只負責「配方名稱搜尋」；材料反查已經併入 items.html（素材圖鑑）
 // ===================================================================
 'use strict';
@@ -169,7 +169,7 @@
     $('active-filter').innerHTML = `<span>${scopeText}</span><button type="button" id="sortToggle">製作等級：${state.sortDesc ? '由高到低 ↓' : '由低到高 ↑'}</button>`;
 
     if (!matches.length) {
-      $('results').innerHTML = `<div class="empty"><h3>目前收錄資料中沒有符合的配方</h3><p>請嘗試縮短關鍵字，或取消精確名稱。想反查某個材料能做什麼，改用<a href="items.html">素材圖鑑</a>。<br>目前只收錄生產設施 Lv.4 及以下截圖過的配方，查無結果不代表遊戲中沒有這個配方。</p><button id="reset">重設搜尋與篩選</button></div>`;
+      $('results').innerHTML = `<div class="empty"><h3>目前收錄資料中沒有符合的配方</h3><p>請嘗試縮短關鍵字，或取消精確名稱。想反查某個材料能做什麼，改用<a href="items.html">素材圖鑑</a>。<br>目前只收錄生產設施 Lv.4 及以下、顯示設定為 Show 的配方，查無結果不代表遊戲中沒有這個配方。</p><button id="reset">重設搜尋與篩選</button></div>`;
     } else {
       $('results').innerHTML = matches.slice((state.page - 1) * perPage, state.page * perPage).map(r => {
         const metaParts = [];
@@ -198,7 +198,7 @@
   }
 
   $('notice-date').textContent = data.meta?.snapshot || data.meta?.retrieved || '';
-  $('coverage').innerHTML = `<p>已收錄 ${number(data.recipes.length)} 筆配方，全部來自玩家實際截圖台服畫面逐字辨識，範圍為${esc(data.meta?.scope || '生產設施 Lv.4 及以下')}。材料索引 ${number(data.materials.length)} 筆。</p><p>類別：${data.categories.map(esc).join('、')}。舊版韓服翻譯資料（涵蓋更多分類與等級，但譯名尚未完全校對）已從網站移除，僅留存於內部資料庫供之後交叉對照使用。</p>`;
+  $('coverage').innerHTML = `<p>已收錄 ${number(data.recipes.length)} 筆配方，${esc(data.meta?.source || '')}，範圍為${esc(data.meta?.scope || '生產設施 Lv.4 及以下')}。材料索引 ${number(data.materials.length)} 筆。</p><p>類別：${data.categories.map(esc).join('、')}。</p>`;
   $('build-meta').textContent = `資料版本：${data.meta?.retrieved || ''}`;
 
   $('search').addEventListener('input', e => { state.query = e.target.value; state.page = 1; render(); });

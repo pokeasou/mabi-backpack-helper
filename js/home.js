@@ -26,11 +26,7 @@
     const updates = [
       {
         date: data.meta?.retrieved || '',
-        desc: `收錄 ${data.recipes.length} 筆配方、${data.materials.length} 筆材料，全部來自玩家實際截圖台服畫面逐字辨識，範圍為${data.meta?.scope || '生產設施 Lv.3 及以下'}。`,
-      },
-      {
-        date: data.meta?.snapshot || '',
-        desc: `舊版韓服翻譯資料已從網站移除，改以玩家實測資料為主要內容，準確度更高。`,
+        desc: `收錄 ${data.recipes.length} 筆配方、${data.materials.length} 筆材料，${data.meta?.source || ''}，範圍為${data.meta?.scope || '生產設施 Lv.4 及以下'}。`,
       },
     ];
     $('recentUpdates').innerHTML = updates.map(u =>
