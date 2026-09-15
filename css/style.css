@@ -358,7 +358,10 @@ summary { cursor: pointer; }
 #sources p { max-width: 1000px; }
 #coverage { padding-top: 15px; }
 
-.site-footer { font-size: .74rem; color: var(--text-3); border-top: 1px solid var(--line); padding: 20px var(--gutter); display: flex; justify-content: space-between; gap: 15px; }
+.site-footer { font-size: .74rem; color: var(--text-3); border-top: 1px solid var(--line); padding: 20px var(--gutter); }
+.footer-baseline { margin-bottom: 10px; line-height: 1.7; }
+.footer-baseline strong { color: var(--text-2); }
+.footer-credit { display: flex; justify-content: space-between; gap: 15px; }
 
 /* ===================================================================
    首頁專用：Hero / 入口卡片 / 最近更新

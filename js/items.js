@@ -64,24 +64,19 @@
   const categoryCounts = new Map();
   for (const it of allItems) for (const c of it.categories) categoryCounts.set(c, (categoryCounts.get(c) || 0) + 1);
 
-  const state = { query: '', category: '全部', subCategory: null, expanded: new Set(), sortDesc: false };
+  const state = { query: '', category: '全部', subCategory: null, sortDesc: false };
 
+  // 側欄分類顯示順序：固定順序，不是資料裡的字母排序
+  const CATEGORY_ORDER = ['多用途製作', '布料加工', '木材加工', '皮革加工', '金屬加工', '藥品加工', '藥品製作', '食材加工', '食物製作', '武器製作', '防具製作'];
+  const orderedCategories = CATEGORY_ORDER.filter(c => data.categories.includes(c))
+    .concat(data.categories.filter(c => !CATEGORY_ORDER.includes(c)));
+
+  // 側欄只用來切換分頁（分類），不做子分類開合；子分類篩選一律用正文區塊上方的篩選器
   function renderSidebar() {
-    $('categories').innerHTML = ['全部', ...data.categories].map(c => {
+    $('categories').innerHTML = ['全部', ...orderedCategories].map(c => {
       const n = c === '全部' ? allItems.length : (categoryCounts.get(c) || 0);
       const label = `<span>${c === '全部' ? '全部分類' : esc(c)}</span><span>${number(n)}</span>`;
-      const mainBtn = `<button type="button" class="cat-main ${state.category === c ? 'active' : ''}" data-category="${esc(c)}">${label}</button>`;
-      const subs = subCategoriesOf(c);
-      if (!subs.length) return mainBtn; // 沒有子分類，不用開合按鈕
-      const expanded = state.expanded.has(c);
-      const row = `<div class="cat-row">${mainBtn}<button type="button" class="cat-toggle" data-toggle="${esc(c)}" aria-expanded="${expanded}" title="${expanded ? '收合子分類' : '展開子分類'}">${expanded ? '−' : '+'}</button></div>`;
-      if (!expanded) return row;
-      const subItems = allItems.filter(it => it.categories.has(c));
-      const subCounts = new Map(); for (const it of subItems) if (it.subCategory) subCounts.set(it.subCategory, (subCounts.get(it.subCategory) || 0) + 1);
-      const subHtml = subs.map((s, i) =>
-        `<button type="button" class="sub ${state.category === c && state.subCategory === s ? 'active' : ''}" data-category="${esc(c)}" data-subcategory="${esc(s)}"><span class="branch">${i === subs.length - 1 ? '└' : '├'}</span><span>${esc(s)}</span><span>${number(subCounts.get(s) || 0)}</span></button>`
-      ).join('');
-      return row + subHtml;
+      return `<button type="button" class="cat-main ${state.category === c ? 'active' : ''}" data-category="${esc(c)}">${label}</button>`;
     }).join('');
   }
 
@@ -111,6 +106,20 @@
     ].filter(Boolean).join('　');
     const scopeText = filterNote ? `目前範圍：${filterNote}　<button type="button" id="clear-scope-items">清除分類篩選</button>` : '';
 
+    // 子分類揀選器：跟生產配方頁一樣放在正文上方，側欄不做子分類篩選
+    const currentSubs = subCategoriesOf(state.category);
+    let subcatPickerHtml = '';
+    if (state.category !== '全部' && currentSubs.length) {
+      const pickerBase = allItems.filter(it => it.categories.has(state.category) && (!q || norm(it.name).includes(q)));
+      const pickerCounts = new Map(); for (const it of pickerBase) if (it.subCategory) pickerCounts.set(it.subCategory, (pickerCounts.get(it.subCategory) || 0) + 1);
+      subcatPickerHtml = `<div id="subcatPicker" class="level-picker subcat-picker">${['全部', ...currentSubs].map(s => {
+        const val = s === '全部' ? '' : s;
+        const active = s === '全部' ? !state.subCategory : state.subCategory === s;
+        const count = s === '全部' ? pickerBase.length : (pickerCounts.get(s) || 0);
+        return `<button type="button" class="${active ? 'active' : ''}" aria-pressed="${active}" data-category="${esc(state.category)}" data-subcategory="${esc(val)}">${s === '全部' ? '全部' : esc(s)}（${number(count)}）</button>`;
+      }).join('')}</div>`;
+    }
+
     $('contentInner').innerHTML = `
       <div class="intro">
         <div>
@@ -121,6 +130,7 @@
         <div class="stats"><div><strong>${number(allItems.length)}</strong><span>收錄物品</span></div></div>
       </div>
       <div class="result-bar"><h2>${state.subCategory ? esc(state.subCategory) : (state.category === '全部' ? '全部物品' : esc(state.category))}</h2><span>${number(list.length)} 筆</span></div>
+      ${subcatPickerHtml}
       <div id="active-filter"><span>${scopeText}</span><button type="button" id="sortToggle">製作等級：${state.sortDesc ? '由高到低 ↓' : '由低到高 ↑'}</button></div>
       ${list.length ? `<div class="item-grid">${cards}</div>` : '<div class="empty"><h3>沒有符合的物品</h3><p>換個關鍵字，或清除分類篩選試試。</p></div>'}
     `;
@@ -211,26 +221,18 @@
   document.addEventListener('click', e => {
     const b = e.target.closest('button');
     if (!b) return;
-    if (b.dataset.toggle) {
-      // 開合按鈕：只切換子分類列表展開/收合，不影響目前的篩選結果
-      if (state.expanded.has(b.dataset.toggle)) state.expanded.delete(b.dataset.toggle);
-      else state.expanded.add(b.dataset.toggle);
-      renderSidebar();
-    }
-    else if (b.dataset.subcategory) {
+    if (b.dataset.subcategory) {
       state.category = b.dataset.category;
       state.subCategory = state.subCategory === b.dataset.subcategory ? null : b.dataset.subcategory;
-      state.expanded.add(b.dataset.category);
       if (new URLSearchParams(location.search).get('item')) history.replaceState(null, '', 'items.html');
       renderSidebar(); renderBrowse();
     }
     else if (b.dataset.category) {
       state.category = b.dataset.category; state.subCategory = null;
-      state.expanded.add(b.dataset.category);
       if (new URLSearchParams(location.search).get('item')) history.replaceState(null, '', 'items.html');
       renderSidebar(); renderBrowse();
     }
-    else if (b.id === 'clear-scope-items') { state.category = '全部'; state.subCategory = null; state.expanded.clear(); renderSidebar(); renderBrowse(); }
+    else if (b.id === 'clear-scope-items') { state.category = '全部'; state.subCategory = null; renderSidebar(); renderBrowse(); }
     else if (b.id === 'sortToggle') { state.sortDesc = !state.sortDesc; renderBrowse(); }
   });
 
