@@ -170,7 +170,7 @@
         if (r.skillRequirement) metaParts.push(skillHtml(r.skillRequirement));
         metaParts.push(r.yield == null ? '產量未記載' : '產量 ' + r.yield + ' 個');
         metaParts.push(r.time ? esc(r.time) : '無需時間');
-        return `<article class="recipe"><div><span class="badge">${esc(r.category)}${r.level ? ' · Lv.' + r.level : ''}</span><h3>${esc(r.name)}</h3><div class="meta">${metaParts.join('　·　')}</div></div><div><div class="ingredients-label">所需材料 <span>／每次製作</span></div><div class="ingredients">${r.ingredients.map(i => {
+        return `<article class="recipe"><div><span class="badge">${esc(r.category)}${r.level ? ' · Lv.' + r.level : ''}</span><h3>${RecipeFavorites.starHtml(r.name)}${esc(r.name)}</h3><div class="meta">${metaParts.join('　·　')}</div></div><div><div class="ingredients-label">所需材料 <span>／每次製作</span></div><div class="ingredients">${r.ingredients.map(i => {
           const info = nameIndex.get(i.name);
           const ni = info?.notImplemented;
           return `<a class="ingredient" href="items.html?item=${encodeURIComponent(i.name)}" title="查看「${esc(i.name)}」的素材圖鑑"><span>${esc(i.name)}${ni ? '<span class="ni-tag">未實裝</span>' : ''}</span><b>× ${i.quantity}</b></a>`;

@@ -117,8 +117,10 @@
   function calc() {
     hasCalculated = true;
     const groups = new Map(); // 分類 -> rows[]
+    const favRows = [];       // 我的最愛：不管手上有沒有材料，都會列在最上面
     for (const r of data.recipes) {
       if (r.notImplemented) continue; // 未實裝的配方不算
+      const isFav = RecipeFavorites.has(r.name);
       let relevant = false;
       let fullyCraftable = true;
       let craftCount = Infinity;
@@ -133,46 +135,61 @@
           craftCount = Math.min(craftCount, Math.floor(owned / ing.quantity));
         }
       }
-      if (!relevant) continue; // 手上完全沒有這個配方用到的任何材料，不列出來洗版
+      if (!relevant && !isFav) continue; // 手上完全沒有這個配方用到的任何材料（而且不是最愛），不列出來洗版
       if (!fullyCraftable) craftCount = 0;
       missing.sort((a, b) => compareByKind(a.name, b.name)); // 缺少的材料依種類與進階順序排列
+      const row = { recipe: r, fullyCraftable, craftCount, missing };
+      if (isFav) { favRows.push(row); continue; }
       if (!groups.has(r.category)) groups.set(r.category, []);
-      groups.get(r.category).push({ recipe: r, fullyCraftable, craftCount, missing });
+      groups.get(r.category).push(row);
     }
 
-    if (!groups.size) {
+    if (!groups.size && !favRows.length) {
       $('calcResults').innerHTML = `<div class="empty"><h3>目前的庫存做不出（或差很多）任何收錄的配方</h3><p>先在左邊加入幾樣持有的材料，再按一次計算看看。</p></div>`;
       return;
     }
 
-    let html = '';
-    const orderedGroups = [...groups].sort((a, b) => categoryRank(a[0]) - categoryRank(b[0]));
-    for (const [category, rows] of orderedGroups) {
-      rows.sort((a, b) => (b.fullyCraftable - a.fullyCraftable) || (b.craftCount - a.craftCount));
-      html += `<div class="inv-results-group"><h2>${esc(category)}</h2>`;
-      for (const row of rows) {
-        if (row.fullyCraftable) {
-          html += `<div class="inv-row ok">
+    // 單一配方的一列：最前面是星號，缺少的材料是連結，點下去直接到該材料的素材圖鑑頁
+    const rowHtml = row => {
+      const star = RecipeFavorites.starHtml(row.recipe.name);
+      if (row.fullyCraftable) {
+        return `<div class="inv-row ok">
+            ${star}
             <span class="status">✓</span>
             <span class="name">${esc(row.recipe.name)}</span>
             <span class="count">可製作 ${number(row.craftCount)} 個</span>
           </div>`;
-        } else {
-          html += `<div class="inv-row partial">
+      }
+      const missingLinks = row.missing.map(m =>
+        `<a href="items.html?item=${encodeURIComponent(m.name)}">${esc(m.name)}</a> × ${number(m.short)}`).join('　');
+      return `<div class="inv-row partial">
+            ${star}
             <span class="status">△</span>
             <span class="name">${esc(row.recipe.name)}
-              <div class="missing">缺少：${row.missing.map(m => `${esc(m.name)} × ${number(m.short)}`).join('　')}</div>
+              <div class="missing">缺少：${missingLinks}</div>
             </span>
           </div>`;
-        }
-      }
-      html += `</div>`;
+    };
+    const sortRows = rows => rows.sort((a, b) => (b.fullyCraftable - a.fullyCraftable) || (b.craftCount - a.craftCount));
+
+    let html = '';
+    if (favRows.length) {
+      html += `<div class="inv-results-group inv-fav-group"><h2><span class="inv-fav-mark">★</span> 我的最愛</h2>${sortRows(favRows).map(rowHtml).join('')}</div>`;
+    }
+    const orderedGroups = [...groups].sort((a, b) => categoryRank(a[0]) - categoryRank(b[0]));
+    for (const [category, rows] of orderedGroups) {
+      html += `<div class="inv-results-group"><h2>${esc(category)}</h2>${sortRows(rows).map(rowHtml).join('')}</div>`;
     }
     $('calcResults').innerHTML = html;
   }
+
+  // 星號切換最愛之後，右邊要跟著重排（最愛移到最上面）
+  document.addEventListener('favorites-changed', () => { if (hasCalculated) calc(); });
 
   $('calcBtn').addEventListener('click', calc);
   $('build-meta').textContent = `資料版本：${data.meta?.retrieved || ''}`;
 
   renderInventory();
+  // 已經有最愛配方的話，一進頁面就先算好，最愛會直接排在右邊最上面
+  if (RecipeFavorites.all().length) calc();
 })();

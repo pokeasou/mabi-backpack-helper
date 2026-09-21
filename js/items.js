@@ -238,7 +238,7 @@
       metaParts.push(r.yield == null ? '產量未記載' : `一次產出 ${r.yield} 個`);
       metaParts.push(r.time ? esc(r.time) : '無需時間');
       acquisitionHtml += `<div class="recipe-source-box">
-        <div class="badge">${esc(r.category)}${r.level ? ' · Lv.' + r.level : ''}</div>
+        <div class="recipe-box-head">${RecipeFavorites.starHtml(r.name)}<span class="badge">${esc(r.category)}${r.level ? ' · Lv.' + r.level : ''}</span></div>
         <p style="margin:10px 0 12px;font-size:.85rem;color:var(--text-2);">可在「${esc(r.station || '')}」製作，${metaParts.join('　·　')}。</p>
         <div class="ingredients-label">所需材料</div>
         <div class="ingredients">${r.ingredients.map(i => {

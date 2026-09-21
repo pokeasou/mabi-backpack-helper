@@ -468,6 +468,7 @@ summary { cursor: pointer; }
 }
 .usage-row:hover { border-color: var(--accent); }
 .usage-row .qty { color: var(--accent); font-size: .82rem; white-space: nowrap; flex-shrink: 0; }
+.recipe-box-head { display: flex; align-items: center; gap: 8px; }
 .recipe-source-box { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 16px 18px; }
 
 /* ===================================================================
@@ -492,6 +493,12 @@ summary { cursor: pointer; }
 .inv-table button.remove { border: 0; background: none; color: var(--danger); font-size: .8rem; }
 .inv-empty { color: var(--text-3); font-size: .84rem; padding: 20px; text-align: center; }
 
+/* 我的最愛星號：配方名稱前面，空心＝還沒加入，實心＝已加入 */
+.fav-star { border: 0; background: none; padding: 0 6px 0 0; font-size: 1.1rem; line-height: 1; color: var(--text-3); cursor: pointer; vertical-align: -1px; flex-shrink: 0; }
+.fav-star:hover { color: #E3AE44; transform: scale(1.12); }
+.fav-star.on { color: #E3AE44; }
+.recipe h3 { display: flex; align-items: baseline; }
+
 /* 倉庫計算器：左右兩欄（左＝庫存輸入，右＝計算結果） */
 .inv-main { max-width: 1240px; margin: 0 auto; }
 .inv-layout { display: grid; grid-template-columns: minmax(300px, 5fr) minmax(0, 7fr); gap: 24px; align-items: start; }
@@ -510,6 +517,11 @@ summary { cursor: pointer; }
 .inv-item .remove { border: 0; background: none; color: var(--danger); font-size: .8rem; }
 .inv-hint { color: var(--text-3); font-size: .86rem; padding: 26px 8px; text-align: center; line-height: 1.8; }
 .inv-panel .inv-row { background: var(--surface-3); }
+.inv-row .fav-star { padding-right: 0; font-size: 1.05rem; }
+.inv-row .missing a { color: inherit; text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 3px; }
+.inv-row .missing a:hover { text-decoration-style: solid; }
+.inv-fav-group h2 { color: var(--text); }
+.inv-fav-mark { color: #E3AE44; }
 
 .inv-calc-btn { border: 0; background: var(--accent); color: white; font-weight: 600; padding: 12px 22px; border-radius: 6px; font-size: .92rem; margin-bottom: 30px; }
 .inv-calc-btn:hover { filter: brightness(1.08); }
