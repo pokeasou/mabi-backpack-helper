@@ -30,7 +30,7 @@
 <!-- Context-Bar：全站導航（我要去哪個功能），吸在 Header 下方 -->
 <div class="context-bar">
   <nav class="global-nav" aria-label="全站導航">
-    <span class="disabled">攻略<em>即將推出</em></span>
+    <a href="map.html">材料地圖</a>
     <a href="database.html">生產配方</a>
     <a href="items.html">素材圖鑑</a>
     <a href="inventory.html">倉庫計算器</a>
@@ -53,12 +53,11 @@
 <main class="home-main">
 
   <div class="entry-cards">
-    <div class="entry-card disabled" aria-disabled="true">
-      <div class="icon">📖</div>
-      <h3>攻略</h3>
-      <p>「這個遊戲要怎麼玩？」新手上路、生產技能、系統與日常規劃等文章整理。</p>
-      <span class="soon">即將推出</span>
-    </div>
+    <a class="entry-card" href="map.html">
+      <div class="icon">🗺️</div>
+      <h3>材料地圖</h3>
+      <p>「這個地區能收集到什麼？」依地區與附屬地區查詢可以採集、釣魚、掉落或購買的素材。</p>
+    </a>
     <a class="entry-card" href="database.html">
       <div class="icon">🧪</div>
       <h3>生產配方</h3>
@@ -92,6 +91,7 @@
 </footer>
 
 <script src="js/theme.js"></script>
+<script src="js/favorites.js"></script>
 <script src="js/data.js"></script>
 <script src="js/home.js"></script>
 </body>
