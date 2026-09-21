@@ -16,39 +16,29 @@
   const number = n => n.toLocaleString('en-US');
 
   // ---------- 地區階層 ----------
-  // 依遊戲地圖資料整理：城鎮 → 底下連出去的狩獵場／地下城。名稱必須跟取得方式資料裡的「地圖」名稱一致。
-  // dungeon: true 的是地下城／古墳／礦區，目前取得方式資料沒有收錄它們的素材（側欄會淡化顯示、數量標「—」）
-  // 想調整歸類、加地點，只要改這份清單就好
+  // 依遊戲地圖資料整理：城鎮 → 底下連出去的狩獵場。名稱必須跟取得方式資料裡的「地圖」名稱一致。
+  // 沒有素材資料的地點，側欄會淡化顯示、數量標「—」。想調整歸類、加地點，只要改這份清單就好
   const REGIONS = [
     { name: '堤爾克那地區', areas: [
       { name: '堤爾克那', note: '城鎮與周邊的一般野外' },
       { name: '狼之森林', note: '狩獵場' },
-      { name: '艾菲地下城', dungeon: true },
-      { name: '賽維爾地下城', dungeon: true },
       { name: '杜加德走廊' },
       { name: '希德斯特雪原' },
     ] },
     { name: '杜巴頓地區', areas: [
       { name: '杜巴頓', note: '城鎮與周邊的一般野外' },
       { name: '女神庭園', note: '狩獵場' },
-      { name: '萊比地下城', dungeon: true },
-      { name: '瑪斯地下城', dungeon: true },
       { name: '萊爾特丘陵' },
     ] },
     { name: '庫漢地區', areas: [
       { name: '庫漢', note: '城鎮與周邊的一般野外' },
       { name: '冰霜峽谷', note: '狩獵場' },
       { name: '庫漢團隊副本' },
-      { name: '公會軍艦' },
-      { name: '北方廢墟', dungeon: true },
-      { name: '南方廢墟', dungeon: true },
     ] },
     { name: '班克爾地區', areas: [
       { name: '班克爾', note: '城鎮與周邊的一般野外' },
       { name: '雲海曠野', note: '狩獵場' },
       { name: '雲之荒野', note: '雲海曠野的高難度版本' },
-      { name: '巴里1礦區', dungeon: true },
-      { name: '巴里2礦區', dungeon: true },
     ] },
   ];
 
