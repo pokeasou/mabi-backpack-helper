@@ -249,8 +249,7 @@
     }
     const acq = acqOf(it.name);
     if (acq) {
-      acquisitionHtml += `<div class="acq-list">${acqRowsHtml(acq)}</div>
-        <p class="acq-note">取得方式整理自台港澳客戶端資料，僅表示資料中有此來源，實際開放狀況、商店庫存與掉落機率以遊戲內為準。</p>`;
+      acquisitionHtml += `<div class="acq-list">${acqRowsHtml(acq)}</div>`;
     } else if (!it.isCraftable) {
       acquisitionHtml += `<div class="item-empty-state">這個物品的取得來源目前尚未確認。</div>`;
     }

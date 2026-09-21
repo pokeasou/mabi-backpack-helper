@@ -447,7 +447,6 @@ summary { cursor: pointer; }
 .acq-shops { list-style: none; margin: 0; padding: 0; }
 .acq-shops li { padding: 2px 0; }
 .acq-shops li b { display: inline-block; min-width: 4.5em; font-weight: 600; }
-.acq-note { margin: 10px 0 0; font-size: .76rem; color: var(--text-3); line-height: 1.7; }
 
 .item-detail-header { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 24px 26px; margin-bottom: 24px; }
 .item-detail-header .korean { font-size: .85rem; margin-top: 2px; }
