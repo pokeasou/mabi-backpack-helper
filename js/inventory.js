@@ -1,6 +1,7 @@
 // ===================================================================
-// 瑪奇M 背包小救星 - 倉庫計算器
-// 輸入持有材料與數量 → 算出目前可完整製作的配方，以及只差一點的配方缺什麼
+// 瑪奇 M 背包小救星 - 倉庫計算器
+// 左邊輸入持有材料與數量（依材料種類分組），右邊顯示目前可完整製作的配方，
+// 以及只差一點的配方還缺什麼（缺少的材料同樣依種類排列）
 // （目前只算「直接材料」，還沒有展開中間產物的連鎖生產鏈）
 // ===================================================================
 'use strict';
@@ -15,6 +16,20 @@
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const norm = s => String(s ?? '').normalize('NFKC').toLowerCase().replace(/[\s・·]/g, '');
   const number = n => n.toLocaleString('en-US');
+
+  // ---------- 材料種類：跟素材圖鑑共用 js/kinds.js 的定義 ----------
+  const { FAMILIES, kindOf: kindOfItem } = window.ItemKinds;
+  const categoryByName = new Map(); // 配方成品名稱 -> 生產分類（成品才能歸到料理／武器／防具等種類）
+  for (const r of data.recipes) if (!categoryByName.has(r.name)) categoryByName.set(r.name, r.category);
+  const kindOf = name => kindOfItem(name, categoryByName.get(name));
+  const compareByKind = (a, b) => {
+    const ka = kindOf(a), kb = kindOf(b);
+    return ka.f - kb.f || ka.t - kb.t || a.localeCompare(b, 'zh-Hant');
+  };
+
+  // 分類固定順序：跟生產配方頁側欄一致
+  const CATEGORY_ORDER = ['多用途製作', '布料加工', '木材加工', '皮革加工', '金屬加工', '藥品加工', '藥品製作', '食材加工', '食物製作', '武器製作', '防具製作'];
+  const categoryRank = c => { const i = CATEGORY_ORDER.indexOf(c); return i === -1 ? CATEGORY_ORDER.length : i; };
 
   // ---------- 統一的物品名稱索引（材料清單 + 配方成品），給搜尋加入庫存用 ----------
   const nameIndex = new Map();
@@ -32,19 +47,31 @@
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(inventory)); } catch (e) { /* localStorage 被擋掉時，這次操作就不保存，不影響當下使用 */ }
   }
 
-  // ---------- 庫存表格渲染 ----------
+  let hasCalculated = false; // 按過一次「計算」之後，庫存有變動就自動重算，右邊會跟著即時更新
+
+  // ---------- 左側：庫存清單（依材料種類分組） ----------
   function renderInventory() {
     const keys = Object.keys(inventory);
     if (!keys.length) {
-      $('invBody').innerHTML = `<tr><td colspan="3" class="inv-empty">還沒有加入任何材料，上面搜尋並點選要加入的物品。</td></tr>`;
+      $('invList').innerHTML = `<div class="inv-hint">還沒有加入任何材料，上面搜尋並點選要加入的物品。</div>`;
       return;
     }
-    keys.sort((a, b) => a.localeCompare(b, 'zh-Hant'));
-    $('invBody').innerHTML = keys.map(name => `<tr>
-        <td>${esc(name)}</td>
-        <td><input type="number" min="0" step="1" value="${inventory[name]}" data-qty="${esc(name)}"></td>
-        <td><button type="button" class="remove" data-remove="${esc(name)}">移除</button></td>
-      </tr>`).join('');
+    keys.sort(compareByKind);
+    const groups = new Map(); // 種類序號 -> 物品名稱[]
+    for (const name of keys) {
+      const f = kindOf(name).f;
+      if (!groups.has(f)) groups.set(f, []);
+      groups.get(f).push(name);
+    }
+    $('invList').innerHTML = [...groups].map(([f, names]) => `
+      <div class="inv-group">
+        <h3>${esc(FAMILIES[f].name)}<span>${names.length} 項</span></h3>
+        ${names.map(name => `<div class="inv-item">
+          <span>${esc(name)}</span>
+          <input type="number" min="0" step="1" value="${inventory[name]}" data-qty="${esc(name)}" aria-label="${esc(name)} 持有數量">
+          <button type="button" class="remove" data-remove="${esc(name)}">移除</button>
+        </div>`).join('')}
+      </div>`).join('');
   }
 
   // ---------- 加入物品：搜尋建議 ----------
@@ -66,9 +93,11 @@
       if (!(name in inventory)) inventory[name] = 1;
       saveInventory(); renderInventory();
       $('addSearch').value = ''; $('addSuggest').hidden = true; $('addSuggest').innerHTML = '';
+      if (hasCalculated) calc();
     } else if (removeBtn) {
       delete inventory[removeBtn.dataset.remove];
       saveInventory(); renderInventory();
+      if (hasCalculated) calc();
     } else if (!e.target.closest('.inv-add')) {
       $('addSuggest').hidden = true;
     }
@@ -80,11 +109,13 @@
       const v = Math.max(0, Math.floor(Number(e.target.value) || 0));
       inventory[name] = v;
       saveInventory();
+      if (hasCalculated) calc();
     }
   });
 
-  // ---------- 計算可製作物 ----------
+  // ---------- 右側：計算可製作物 ----------
   function calc() {
+    hasCalculated = true;
     const groups = new Map(); // 分類 -> rows[]
     for (const r of data.recipes) {
       if (r.notImplemented) continue; // 未實裝的配方不算
@@ -104,17 +135,19 @@
       }
       if (!relevant) continue; // 手上完全沒有這個配方用到的任何材料，不列出來洗版
       if (!fullyCraftable) craftCount = 0;
+      missing.sort((a, b) => compareByKind(a.name, b.name)); // 缺少的材料依種類與進階順序排列
       if (!groups.has(r.category)) groups.set(r.category, []);
       groups.get(r.category).push({ recipe: r, fullyCraftable, craftCount, missing });
     }
 
     if (!groups.size) {
-      $('calcResults').innerHTML = `<div class="empty"><h3>目前的庫存做不出（或差很多）任何收錄的配方</h3><p>先加入幾樣持有的材料，再按一次計算看看。</p></div>`;
+      $('calcResults').innerHTML = `<div class="empty"><h3>目前的庫存做不出（或差很多）任何收錄的配方</h3><p>先在左邊加入幾樣持有的材料，再按一次計算看看。</p></div>`;
       return;
     }
 
     let html = '';
-    for (const [category, rows] of groups) {
+    const orderedGroups = [...groups].sort((a, b) => categoryRank(a[0]) - categoryRank(b[0]));
+    for (const [category, rows] of orderedGroups) {
       rows.sort((a, b) => (b.fullyCraftable - a.fullyCraftable) || (b.craftCount - a.craftCount));
       html += `<div class="inv-results-group"><h2>${esc(category)}</h2>`;
       for (const row of rows) {

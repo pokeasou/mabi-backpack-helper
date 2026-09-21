@@ -421,6 +421,9 @@ summary { cursor: pointer; }
    素材圖鑑：清單卡片 + 物品詳情頁
    =================================================================== */
 .item-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+.item-kind-group h3 { display: flex; justify-content: space-between; align-items: baseline; margin: 26px 0 10px; padding-bottom: 8px; border-bottom: 1px solid var(--line); font-size: .95rem; }
+.item-kind-group h3 span { font-size: .78rem; font-weight: 400; color: var(--text-3); }
+.item-kind-group:first-child h3 { margin-top: 6px; }
 .item-card {
   display: block; text-decoration: none; text-align: left;
   background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px;
@@ -429,7 +432,22 @@ summary { cursor: pointer; }
 .item-card:hover { border-color: var(--accent); }
 .item-card .item-card-zh { font-size: .92rem; display: block; margin-bottom: 2px; }
 .item-card .item-card-kr { font-size: .72rem; color: var(--text-3); }
-.item-card .item-card-tags { margin-top: 6px; }
+.item-card .item-card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.acq-tag { font-size: .68rem; line-height: 1; padding: 3px 7px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); }
+.acq-tag-unknown { background: var(--surface-2); color: var(--text-3); }
+
+/* 詳情頁的取得方式列 */
+.acq-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.recipe-source-box + .acq-list, .acq-list:first-child { margin-top: 12px; }
+.acq-row { display: grid; grid-template-columns: 78px minmax(0, 1fr); gap: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; }
+.acq-method { align-self: start; text-align: center; font-size: .76rem; font-weight: 600; color: var(--accent); background: var(--accent-soft); border-radius: 4px; padding: 4px 6px; }
+.acq-body { min-width: 0; font-size: .88rem; line-height: 1.75; overflow-wrap: anywhere; }
+.acq-sub { color: var(--text-2); font-size: .8rem; }
+.acq-req { display: inline-block; margin-left: 8px; padding: 1px 7px; border-radius: 10px; background: var(--surface-2); color: var(--text-2); font-size: .72rem; }
+.acq-shops { list-style: none; margin: 0; padding: 0; }
+.acq-shops li { padding: 2px 0; }
+.acq-shops li b { display: inline-block; min-width: 4.5em; font-weight: 600; }
+.acq-note { margin: 10px 0 0; font-size: .76rem; color: var(--text-3); line-height: 1.7; }
 
 .item-detail-header { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 24px 26px; margin-bottom: 24px; }
 .item-detail-header .korean { font-size: .85rem; margin-top: 2px; }
@@ -475,6 +493,25 @@ summary { cursor: pointer; }
 .inv-table button.remove { border: 0; background: none; color: var(--danger); font-size: .8rem; }
 .inv-empty { color: var(--text-3); font-size: .84rem; padding: 20px; text-align: center; }
 
+/* 倉庫計算器：左右兩欄（左＝庫存輸入，右＝計算結果） */
+.inv-main { max-width: 1240px; margin: 0 auto; }
+.inv-layout { display: grid; grid-template-columns: minmax(300px, 5fr) minmax(0, 7fr); gap: 24px; align-items: start; }
+.inv-panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; min-width: 0; }
+.inv-panel-title { margin: 0 0 14px; font-size: 1.05rem; }
+.inv-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.inv-panel-head .inv-panel-title { margin: 0; }
+.inv-panel-head .inv-calc-btn { margin: 0; }
+.inv-panel .inv-add { background: var(--surface-3); padding: 10px 12px; margin-bottom: 8px; }
+.inv-panel .inv-add input[type=search] { background: var(--surface); color: var(--text); }
+.inv-group h3 { display: flex; justify-content: space-between; align-items: baseline; margin: 18px 0 6px; padding-bottom: 6px; border-bottom: 1px solid var(--line); font-size: .8rem; font-weight: 600; color: var(--text-2); letter-spacing: .02em; }
+.inv-group h3 span { font-weight: 400; color: var(--text-3); }
+.inv-group:first-child h3 { margin-top: 10px; }
+.inv-item { display: grid; grid-template-columns: minmax(0, 1fr) 92px auto; align-items: center; gap: 10px; padding: 4px 0; font-size: .88rem; }
+.inv-item input[type=number] { width: 100%; border: 1px solid var(--line); border-radius: 5px; padding: 6px 8px; background: var(--surface); color: var(--text); }
+.inv-item .remove { border: 0; background: none; color: var(--danger); font-size: .8rem; }
+.inv-hint { color: var(--text-3); font-size: .86rem; padding: 26px 8px; text-align: center; line-height: 1.8; }
+.inv-panel .inv-row { background: var(--surface-3); }
+
 .inv-calc-btn { border: 0; background: var(--accent); color: white; font-weight: 600; padding: 12px 22px; border-radius: 6px; font-size: .92rem; margin-bottom: 30px; }
 .inv-calc-btn:hover { filter: brightness(1.08); }
 
@@ -513,5 +550,6 @@ summary { cursor: pointer; }
   .content { padding: 20px; }
   .recipe { grid-template-columns: 1fr; gap: 14px; }
   .entry-cards { grid-template-columns: 1fr; }
+  .inv-layout { grid-template-columns: 1fr; }
   .hero { padding: 40px 18px 48px; }
 }

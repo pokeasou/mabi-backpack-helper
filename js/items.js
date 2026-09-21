@@ -60,57 +60,140 @@
     }
   }
 
-  // ---------- 分類清單（側欄用） ----------
-  const categoryCounts = new Map();
-  for (const it of allItems) for (const c of it.categories) categoryCounts.set(c, (categoryCounts.get(c) || 0) + 1);
+  // ---------- 物品種類（側欄用）：跟倉庫計算器共用 js/kinds.js 的種類與進階順序 ----------
+  const { FAMILIES, kindOf } = window.ItemKinds;
+  for (const it of allItems) {
+    const k = kindOf(it.name, [...it.categories][0]); // 成品用它的生產分類決定種類（料理／武器／防具…），材料用名稱
+    it.kind = k.f; it.kindOrder = k.t;
+  }
+  const kindCounts = new Map();
+  for (const it of allItems) kindCounts.set(it.kind, (kindCounts.get(it.kind) || 0) + 1);
 
-  const state = { query: '', category: '全部', subCategory: null, sortDesc: false };
+  // kind：'全部' 或種類序號（字串）；category／subCategory 是正文上方的「製作分類」篩選，跟側欄種類可以疊加
+  const state = { query: '', kind: '全部', category: '全部', subCategory: null, sortMode: 'tier' };
 
-  // 側欄分類顯示順序：固定順序，不是資料裡的字母排序
+  // 製作分類顯示順序：固定順序，不是資料裡的字母排序
   const CATEGORY_ORDER = ['多用途製作', '布料加工', '木材加工', '皮革加工', '金屬加工', '藥品加工', '藥品製作', '食材加工', '食物製作', '武器製作', '防具製作'];
   const orderedCategories = CATEGORY_ORDER.filter(c => data.categories.includes(c))
     .concat(data.categories.filter(c => !CATEGORY_ORDER.includes(c)));
 
-  // 側欄只用來切換分頁（分類），不做子分類開合；子分類篩選一律用正文區塊上方的篩選器
+  // 排序方式：依種類進階順序（預設）→ 製作等級由低到高 → 製作等級由高到低，按鈕依序切換
+  const SORT_MODES = ['tier', 'levelAsc', 'levelDesc'];
+  const SORT_LABEL = { tier: '排序：種類進階順序', levelAsc: '排序：製作等級 由低到高 ↑', levelDesc: '排序：製作等級 由高到低 ↓' };
+
+  // 側欄只用來切換種類（分頁）；製作分類與子分類篩選一律用正文區塊上方的篩選器
   function renderSidebar() {
-    $('categories').innerHTML = ['全部', ...orderedCategories].map(c => {
-      const n = c === '全部' ? allItems.length : (categoryCounts.get(c) || 0);
-      const label = `<span>${c === '全部' ? '全部分類' : esc(c)}</span><span>${number(n)}</span>`;
-      return `<button type="button" class="cat-main ${state.category === c ? 'active' : ''}" data-category="${esc(c)}">${label}</button>`;
-    }).join('');
+    const rows = [['全部', '全部種類', allItems.length]];
+    FAMILIES.forEach((f, i) => { const n = kindCounts.get(i) || 0; if (n) rows.push([String(i), f.name, n]); });
+    $('categories').innerHTML = rows.map(([v, label, n]) =>
+      `<button type="button" class="cat-main ${state.kind === v ? 'active' : ''}" data-kind="${v}"><span>${esc(label)}</span><span>${number(n)}</span></button>`
+    ).join('');
+  }
+
+  // ---------- 取得方式：js/acquisition.js（整理自客戶端資料，沒載入這支檔案就當作沒有資料） ----------
+  const acqData = window.ITEM_ACQUISITION?.items || {};
+  const stripSuffix = name => name.replace(/\([^)]*\)$/, ''); // 「鐵錠(礦石)」這種消歧義尾巴拿掉再查
+  const acqOf = name => acqData[name] || acqData[stripSuffix(name)] || null;
+
+  // 卡片上的取得方式短標籤；完全沒有標籤代表來源待確認
+  function acqTags(it) {
+    const a = acqOf(it.name);
+    const tags = [];
+    if (a?.g) tags.push('採集');
+    if (a?.s) tags.push('商店');
+    if (a?.f) tags.push('釣魚');
+    if (a?.m) tags.push('掉落');
+    if (a?.h) tags.push('分解');
+    if (it.isCraftable) tags.push('製作');
+    return tags;
+  }
+
+  const cardHtml = it => {
+    const tags = acqTags(it);
+    const tagHtml = tags.length
+      ? tags.map(t => `<span class="acq-tag">${t}</span>`).join('')
+      : '<span class="acq-tag acq-tag-unknown">來源待確認</span>';
+    return `
+      <a class="item-card" href="items.html?item=${encodeURIComponent(it.name)}">
+        <span class="item-card-zh">${esc(it.name)}${it.notImplemented ? '<span class="ni-tag">未實裝</span>' : ''}</span>
+        <span class="item-card-tags">${tagHtml}</span>
+      </a>`;
+  };
+
+  // 詳情頁的取得方式列：採集／商店／釣魚／怪物掉落／提示（製作與加工由下面的配方區塊呈現）
+  function acqRowsHtml(a) {
+    const row = (method, body) => `<div class="acq-row"><span class="acq-method">${method}</span><div class="acq-body">${body}</div></div>`;
+    const mapText = (p = [], unknown) => p.length ? `${esc(p.join('、'))}${unknown ? '，其他地圖待確認' : ''}` : (unknown ? '地圖待確認' : '');
+    const req = (skill, lv) => skill ? `<span class="acq-req">${esc(skill)}${lv ? ' Lv.' + lv : ''}</span>` : '';
+    const rows = [];
+    for (const g of a.g || []) {
+      rows.push(row('採集', `<div>${esc(g.w || '採集點')}${req(g.k, g.l)}</div><div class="acq-sub">地圖：${mapText(g.p, g.u) || '地圖待確認'}</div>`));
+    }
+    if (a.s?.length) {
+      rows.push(row('商店', `<ul class="acq-shops">${a.s.map(s => `<li><b>${esc(s.p || '地圖待確認')}</b>${s.w.length ? '　' + esc(s.w.join('、')) : ''}</li>`).join('')}</ul>`));
+    }
+    if (a.f) {
+      rows.push(row('釣魚', `<div>垂釣${req('釣魚', a.f.l)}</div><div class="acq-sub">地圖：${mapText(a.f.p, a.f.u) || '地圖待確認'}</div>`));
+    }
+    if (a.m) {
+      const more = a.m.n > a.m.w.length ? `　等共 ${number(a.m.n)} 種怪物` : `（共 ${number(a.m.n)} 種）`;
+      rows.push(row('怪物掉落', `<div>${esc(a.m.w.join('、'))}${more}</div><div class="acq-sub">地圖：${mapText(a.m.p, true)}　僅表示掉落表包含此素材，非保證掉落</div>`));
+    }
+    for (const h of a.h || []) rows.push(row('分解', `<div>${esc(h)}</div>`));
+    return rows.join('');
   }
 
   // ---------- 清單瀏覽畫面 ----------
   function renderBrowse() {
     document.title = '素材圖鑑｜瑪奇M 背包小救星';
     const q = norm(state.query);
-    let list = allItems.filter(it => {
-      if (state.category !== '全部' && !it.categories.has(state.category)) return false;
-      if (state.category !== '全部' && state.subCategory && it.subCategory !== state.subCategory) return false;
-      if (q && !norm(it.name).includes(q)) return false;
-      return true;
-    });
-    // 依「製作等級」由低到高排序：純素材（沒有自己的配方）沒有等級，視為最基礎的一層排最前面，
-    // 同等級內再依名稱排序；點右上角按鈕可以整組反過來
-    const compareItems = (a, b) => (a.level ?? -1) - (b.level ?? -1) || a.name.localeCompare(b.name, 'zh-Hant');
-    list.sort((a, b) => state.sortDesc ? -compareItems(a, b) : compareItems(a, b));
+    // 先依「種類＋搜尋字串」篩出基底，製作分類列的筆數就是從這份基底算的
+    const base = allItems.filter(it =>
+      (state.kind === '全部' || String(it.kind) === state.kind) && (!q || norm(it.name).includes(q)));
+    const list = base.filter(it =>
+      (state.category === '全部' || it.categories.has(state.category)) && (!state.subCategory || it.subCategory === state.subCategory));
 
-    const cards = list.map(it => `
-      <a class="item-card" href="items.html?item=${encodeURIComponent(it.name)}">
-        <span class="item-card-zh">${esc(it.name)}${it.notImplemented ? '<span class="ni-tag">未實裝</span>' : ''}</span>
-      </a>`).join('');
+    const lvl = it => it.level ?? -1; // 純素材沒有製作等級，視為最基礎的一層
+    const byName = (a, b) => a.name.localeCompare(b.name, 'zh-Hant');
+    const compareTier = (a, b) => a.kind - b.kind || a.kindOrder - b.kindOrder || lvl(a) - lvl(b) || byName(a, b);
+    const compareLevel = (a, b) => lvl(a) - lvl(b) || compareTier(a, b);
+    list.sort(state.sortMode === 'levelAsc' ? compareLevel : state.sortMode === 'levelDesc' ? (a, b) => -compareLevel(a, b) : compareTier);
 
-    const filterNote = [
-      state.category !== '全部' ? esc(state.category) : null,
-      state.subCategory ? esc(state.subCategory) : null,
-    ].filter(Boolean).join('　');
-    const scopeText = filterNote ? `目前範圍：${filterNote}　<button type="button" id="clear-scope-items">清除分類篩選</button>` : '';
+    // 「全部種類」＋種類進階排序時，依種類分區顯示；其他情況一整片卡片
+    let gridHtml;
+    if (!list.length) {
+      gridHtml = '<div class="empty"><h3>沒有符合的物品</h3><p>換個關鍵字，或清除篩選試試。</p></div>';
+    } else if (state.sortMode === 'tier' && state.kind === '全部') {
+      const groups = new Map();
+      for (const it of list) { if (!groups.has(it.kind)) groups.set(it.kind, []); groups.get(it.kind).push(it); }
+      gridHtml = [...groups].map(([k, items]) =>
+        `<section class="item-kind-group"><h3>${esc(FAMILIES[k].name)}<span>${number(items.length)} 筆</span></h3><div class="item-grid">${items.map(cardHtml).join('')}</div></section>`
+      ).join('');
+    } else {
+      gridHtml = `<div class="item-grid">${list.map(cardHtml).join('')}</div>`;
+    }
 
-    // 子分類揀選器：跟生產配方頁一樣放在正文上方，側欄不做子分類篩選
+    const kindName = state.kind === '全部' ? null : FAMILIES[Number(state.kind)].name;
+    const filterNote = [kindName, state.category !== '全部' ? state.category : null, state.subCategory].filter(Boolean).map(esc).join('　');
+    const scopeText = filterNote ? `目前範圍：${filterNote}　<button type="button" id="clear-scope-items">清除篩選</button>` : '';
+
+    // 製作分類篩選列：放在正文上方，只列出目前種類裡實際有的製作分類
+    const catCounts = new Map();
+    for (const it of base) for (const c of it.categories) catCounts.set(c, (catCounts.get(c) || 0) + 1);
+    const presentCats = orderedCategories.filter(c => catCounts.get(c));
+    const catPickerHtml = presentCats.length
+      ? `<div id="catPicker" class="level-picker subcat-picker">${['全部', ...presentCats].map(c => {
+          const active = c === '全部' ? state.category === '全部' : state.category === c;
+          const count = c === '全部' ? base.length : catCounts.get(c);
+          return `<button type="button" class="${active ? 'active' : ''}" aria-pressed="${active}" data-category="${esc(c)}">${c === '全部' ? '全部製作分類' : esc(c)}（${number(count)}）</button>`;
+        }).join('')}</div>`
+      : '';
+
+    // 子分類揀選器：跟生產配方頁一樣放在正文上方
     const currentSubs = subCategoriesOf(state.category);
     let subcatPickerHtml = '';
     if (state.category !== '全部' && currentSubs.length) {
-      const pickerBase = allItems.filter(it => it.categories.has(state.category) && (!q || norm(it.name).includes(q)));
+      const pickerBase = base.filter(it => it.categories.has(state.category));
       const pickerCounts = new Map(); for (const it of pickerBase) if (it.subCategory) pickerCounts.set(it.subCategory, (pickerCounts.get(it.subCategory) || 0) + 1);
       subcatPickerHtml = `<div id="subcatPicker" class="level-picker subcat-picker">${['全部', ...currentSubs].map(s => {
         const val = s === '全部' ? '' : s;
@@ -120,19 +203,20 @@
       }).join('')}</div>`;
     }
 
+    const title = state.subCategory || (state.category !== '全部' ? state.category : (kindName || '全部物品'));
     $('contentInner').innerHTML = `
       <div class="intro">
         <div>
           <p class="eyebrow">ITEM CATALOG / 台服實測版</p>
           <h1>素材圖鑑</h1>
-          <p>查一個物品：從哪裡取得、能拿來做什麼。輸入名稱搜尋，或用左側分類瀏覽。</p>
+          <p>查一個物品：從哪裡取得、能拿來做什麼。輸入名稱搜尋，或用左側種類瀏覽。</p>
         </div>
-        <div class="stats"><div><strong>${number(allItems.length)}</strong><span>收錄物品</span></div></div>
       </div>
-      <div class="result-bar"><h2>${state.subCategory ? esc(state.subCategory) : (state.category === '全部' ? '全部物品' : esc(state.category))}</h2><span>${number(list.length)} 筆</span></div>
+      <div class="result-bar"><h2>${esc(title)}</h2><span>${number(list.length)} 筆</span></div>
+      ${catPickerHtml}
       ${subcatPickerHtml}
-      <div id="active-filter"><span>${scopeText}</span><button type="button" id="sortToggle">製作等級：${state.sortDesc ? '由高到低 ↓' : '由低到高 ↑'}</button></div>
-      ${list.length ? `<div class="item-grid">${cards}</div>` : '<div class="empty"><h3>沒有符合的物品</h3><p>換個關鍵字，或清除分類篩選試試。</p></div>'}
+      <div id="active-filter"><span>${scopeText}</span><button type="button" id="sortToggle">${SORT_LABEL[state.sortMode]}</button></div>
+      ${gridHtml}
     `;
   }
 
@@ -163,7 +247,13 @@
         <p style="margin-top:12px;"><a href="database.html?q=${encodeURIComponent(it.name)}&exact=1">查看完整配方頁面 →</a></p>
       </div>`;
     }
-    acquisitionHtml += `<div class="item-empty-state" style="margin-top:${it.isCraftable ? '12px' : '0'};">採集地點、商店購買、任務／掉落等取得方式，目前還沒有截圖收錄，之後補上後會顯示在這裡。</div>`;
+    const acq = acqOf(it.name);
+    if (acq) {
+      acquisitionHtml += `<div class="acq-list">${acqRowsHtml(acq)}</div>
+        <p class="acq-note">取得方式整理自台港澳客戶端資料，僅表示資料中有此來源，實際開放狀況、商店庫存與掉落機率以遊戲內為準。</p>`;
+    } else if (!it.isCraftable) {
+      acquisitionHtml += `<div class="item-empty-state">這個物品的取得來源目前尚未確認。</div>`;
+    }
 
     // 用於製作：這個物品被用在哪些配方
     const usedIn = usage.get(it.name) || [];
@@ -221,19 +311,23 @@
   document.addEventListener('click', e => {
     const b = e.target.closest('button');
     if (!b) return;
-    if (b.dataset.subcategory) {
+    const leaveDetail = () => { if (new URLSearchParams(location.search).get('item')) history.replaceState(null, '', 'items.html'); };
+    if (b.dataset.kind !== undefined) {
+      // 換種類：製作分類與子分類篩選一起重設，避免停在這個種類裡根本沒有的分類
+      state.kind = b.dataset.kind; state.category = '全部'; state.subCategory = null;
+      leaveDetail(); renderSidebar(); renderBrowse();
+    }
+    else if (b.dataset.subcategory) {
       state.category = b.dataset.category;
       state.subCategory = state.subCategory === b.dataset.subcategory ? null : b.dataset.subcategory;
-      if (new URLSearchParams(location.search).get('item')) history.replaceState(null, '', 'items.html');
-      renderSidebar(); renderBrowse();
+      leaveDetail(); renderSidebar(); renderBrowse();
     }
     else if (b.dataset.category) {
       state.category = b.dataset.category; state.subCategory = null;
-      if (new URLSearchParams(location.search).get('item')) history.replaceState(null, '', 'items.html');
-      renderSidebar(); renderBrowse();
+      leaveDetail(); renderSidebar(); renderBrowse();
     }
-    else if (b.id === 'clear-scope-items') { state.category = '全部'; state.subCategory = null; renderSidebar(); renderBrowse(); }
-    else if (b.id === 'sortToggle') { state.sortDesc = !state.sortDesc; renderBrowse(); }
+    else if (b.id === 'clear-scope-items') { state.kind = '全部'; state.category = '全部'; state.subCategory = null; renderSidebar(); renderBrowse(); }
+    else if (b.id === 'sortToggle') { state.sortMode = SORT_MODES[(SORT_MODES.indexOf(state.sortMode) + 1) % SORT_MODES.length]; renderBrowse(); }
   });
 
   window.addEventListener('popstate', render);

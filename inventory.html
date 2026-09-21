@@ -35,14 +35,14 @@
   </nav>
 </div>
 
-<main class="content" style="max-width:1000px;margin:0 auto;">
-  <div class="content-inner article-width" style="max-width:960px;">
+<main class="content inv-main">
+  <div class="content-inner">
 
     <div class="intro">
       <div>
         <p class="eyebrow">INVENTORY CALCULATOR / 台服實測版</p>
         <h1>我現在持有這些東西，可以做什麼？</h1>
-        <p>把手上的材料跟數量記錄下來，一鍵算出目前能完整製作的成品，以及只差一點點的配方還缺什麼。</p>
+        <p>左邊記錄手上的材料與數量，右邊算出目前能完整製作的成品，以及只差一點點的配方還缺什麼。</p>
       </div>
     </div>
 
@@ -50,20 +50,28 @@
       這一版只計算「直接材料」是否足夠，還沒有把中間產物的連鎖生產鏈算進去（例如原礦→錠→成品這種多層配方，之後會再擴充）。目前資料範圍為生產設施 Lv.4 及以下。持有數量會自動存在瀏覽器本機，不會不見。
     </div>
 
-    <div class="inv-add">
-      <span aria-hidden="true" style="color:var(--text-2);">＋</span>
-      <input id="addSearch" type="search" autocomplete="off" placeholder="輸入材料或半成品名稱來加入庫存……">
-      <div id="addSuggest" class="inv-add-suggest" hidden></div>
+    <!-- 左右兩欄：左＝輸入庫存（依材料種類分組），右＝計算結果 -->
+    <div class="inv-layout">
+
+      <section class="inv-panel" aria-label="我的庫存">
+        <h2 class="inv-panel-title">我的庫存</h2>
+        <div class="inv-add">
+          <span aria-hidden="true" style="color:var(--text-2);">＋</span>
+          <input id="addSearch" type="search" autocomplete="off" placeholder="輸入材料或半成品名稱來加入庫存……">
+          <div id="addSuggest" class="inv-add-suggest" hidden></div>
+        </div>
+        <div id="invList" class="inv-list"></div>
+      </section>
+
+      <section class="inv-panel" aria-label="計算結果">
+        <div class="inv-panel-head">
+          <h2 class="inv-panel-title">可以做什麼／還缺什麼</h2>
+          <button class="inv-calc-btn" id="calcBtn" type="button">計算可製作物</button>
+        </div>
+        <div id="calcResults"><div class="inv-hint">先在左邊填好庫存，再按上面的「計算可製作物」。</div></div>
+      </section>
+
     </div>
-
-    <table class="inv-table">
-      <thead><tr><th style="width:60%;">物品</th><th>持有數量</th><th></th></tr></thead>
-      <tbody id="invBody"></tbody>
-    </table>
-
-    <button class="inv-calc-btn" id="calcBtn">計算可製作物</button>
-
-    <div id="calcResults"></div>
 
   </div>
 </main>
@@ -75,6 +83,7 @@
 
 <script src="js/theme.js"></script>
 <script src="js/data.js"></script>
+<script src="js/kinds.js"></script>
 <script src="js/inventory.js"></script>
 </body>
 </html>
