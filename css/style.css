@@ -335,11 +335,18 @@ h1 { font-size: clamp(1.5rem, 2.6vw, 2rem); letter-spacing: -.03em; margin: 0 0 
 .meta { font-size: .78rem; line-height: 1.8; color: var(--text-2); margin-top: 12px; }
 .ingredients-label { font-size: .74rem; color: var(--text-3); margin-bottom: 9px; }
 .ingredients { display: flex; flex-wrap: wrap; gap: 7px; }
-.ingredient { border: 1px solid var(--line); background: var(--surface-3); padding: 8px 10px; border-radius: 4px; text-align: left; max-width: 100%; display: flex; gap: 10px; justify-content: space-between; align-items: center; color: var(--text); font-size: .84rem; }
+.ingredient {
+  border: 1px solid var(--line); background: var(--surface-3); padding: 8px 10px; border-radius: 4px;
+  text-align: left; max-width: 100%; display: flex; gap: 10px; justify-content: space-between; align-items: center;
+  color: var(--text); font-size: .84rem; transition: background-color .15s, border-color .15s, color .15s;
+}
 .ingredient small { display: block; font-size: .72rem; color: var(--text-3); line-height: 1.6; }
-.ingredient b { color: var(--accent); white-space: nowrap; }
+.ingredient b { color: var(--accent); white-space: nowrap; transition: color .15s; }
 .ingredient.match { border-color: var(--accent); background: var(--accent-soft); }
-.ingredient:hover { border-color: var(--accent); }
+/* 滑過去／點下去：整個標籤填滿品牌色，數量跟未實裝標籤也換成白色，維持看得清楚 */
+.ingredient:hover { border-color: var(--accent-strong); background: var(--accent-strong); color: #fff; }
+.ingredient:hover b { color: #fff; }
+.ingredient:hover .ni-tag { background: rgba(255, 255, 255, .22); color: #fff; }
 .recipe details { font-size: .78rem; color: var(--text-2); margin-top: 14px; line-height: 1.7; }
 .recipe details p { margin-bottom: 0; overflow-wrap: anywhere; }
 summary { cursor: pointer; }
@@ -439,11 +446,17 @@ summary { cursor: pointer; }
 .item-card {
   display: block; text-decoration: none; text-align: left;
   background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px;
-  cursor: pointer;
+  cursor: pointer; transition: background-color .15s, border-color .15s;
 }
-.item-card:hover { border-color: var(--accent); }
-.item-card .item-card-zh { font-size: .92rem; display: block; margin-bottom: 2px; }
-.item-card .item-card-kr { font-size: .72rem; color: var(--text-3); }
+/* 滑過去／點下去：整張卡片填滿品牌色，名稱跟裡面的標籤都換成白色字，才不會糊在一起看不清楚 */
+.item-card:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+.item-card:hover .item-card-zh { color: #fff; font-weight: 600; }
+.item-card:hover .item-card-kr { color: rgba(255, 255, 255, .75); }
+.item-card:hover .acq-tag { background: rgba(255, 255, 255, .22); color: #fff; }
+.item-card:hover .acq-tag-unknown { background: rgba(255, 255, 255, .14); color: rgba(255, 255, 255, .8); }
+.item-card:hover .ni-tag { background: rgba(255, 255, 255, .22); color: #fff; }
+.item-card .item-card-zh { font-size: .92rem; display: block; margin-bottom: 2px; transition: color .15s; }
+.item-card .item-card-kr { font-size: .72rem; color: var(--text-3); transition: color .15s; }
 .item-card .item-card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
 .acq-tag { font-size: .68rem; line-height: 1; padding: 3px 7px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); }
 .acq-tag-unknown { background: var(--surface-2); color: var(--text-3); }
