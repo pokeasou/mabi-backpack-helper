@@ -399,14 +399,26 @@ summary { cursor: pointer; }
 .home-main { max-width: 1200px; margin: 0 auto; padding: 44px var(--gutter); }
 .entry-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 48px; }
 .entry-card {
-  display: block; text-decoration: none; color: inherit;
+  display: block; text-decoration: none; color: inherit; position: relative; overflow: hidden; isolation: isolate;
   background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 26px;
   transition: border-color .15s, transform .15s, background-color .15s;
 }
-.entry-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-.entry-card .icon { font-size: 1.8rem; margin-bottom: 14px; }
-.entry-card h3 { margin: 0 0 8px; font-size: 1.05rem; color: var(--text); }
-.entry-card p { margin: 0; font-size: .85rem; color: var(--text-2); line-height: 1.6; }
+.entry-card:hover { border-color: var(--accent-strong); transform: translateY(-2px); }
+/* 進場前冷清，滑過去讓一塊斜切的品牌色從左邊滑進來，文字顏色跟著換成白色，卡片就有精神多了 */
+.entry-card::before {
+  content: ""; position: absolute; top: 0; left: -15%; width: 130%; height: 100%;
+  background: var(--accent-strong);
+  transform: translate3d(-100%, 0, 0) skewX(-12deg);
+  transition: transform .45s cubic-bezier(.3, 1, .4, 1);
+}
+.entry-card:hover::before { transform: translate3d(0, 0, 0) skewX(-12deg); }
+.entry-card > * { position: relative; z-index: 1; } /* 圖示／標題／說明要蓋在滑入色塊上面，不能被蓋住 */
+.entry-card .icon { display: inline-flex; margin-bottom: 14px; }
+.entry-card .icon img { width: 56px; height: 56px; display: block; }
+.entry-card h3 { margin: 0 0 8px; font-size: 1.05rem; color: var(--text); transition: color .25s; }
+.entry-card p { margin: 0; font-size: .85rem; color: var(--text-2); line-height: 1.6; transition: color .25s; }
+.entry-card:hover h3 { color: #fff; }
+.entry-card:hover p { color: rgba(255, 255, 255, .86); }
 .entry-card.disabled { opacity: .55; cursor: default; }
 .entry-card.disabled:hover { border-color: var(--line); transform: none; }
 .entry-card .soon { display: inline-block; margin-top: 10px; font-size: .68rem; background: var(--surface-2); color: var(--text-2); padding: 2px 8px; border-radius: 8px; }
