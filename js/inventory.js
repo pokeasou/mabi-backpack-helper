@@ -113,6 +113,52 @@
     }
   });
 
+  // ---------- 批量加入：金屬／布料／木材／皮革這種一整串升級鏈，展開種類勾選就能一次全部加進庫存 ----------
+  // 只列 js/kinds.js 裡有固定清單（order）的種類；料理／武器／防具這種靠配方分類判斷的種類沒有固定清單，不適合這裡
+  function renderBulkPanel() {
+    const groups = FAMILIES
+      .map((fam, i) => ({ i, fam, names: fam.order.filter(n => nameIndex.has(n) && !(n in inventory)) }))
+      .filter(g => g.names.length);
+    if (!groups.length) {
+      $('bulkAddPanel').innerHTML = `<div class="inv-hint">這些種類的材料都已經在庫存清單裡了。</div>`;
+      return;
+    }
+    $('bulkAddPanel').innerHTML = groups.map(g => `
+      <div class="bulk-kind" data-bulk-kind="${g.i}">
+        <button type="button" class="bulk-kind-toggle" aria-expanded="false"><span>${esc(g.fam.name)}</span><span class="n">${g.names.length} 項</span><span class="arrow">▸</span></button>
+        <div class="bulk-group" hidden>
+          ${g.names.map(n => `<label class="bulk-check"><input type="checkbox" value="${esc(n)}"> ${esc(n)}</label>`).join('')}
+        </div>
+      </div>`).join('') + `<button type="button" id="bulkAddApply" class="bulk-add-apply">加入已勾選的材料</button>`;
+  }
+
+  $('bulkAddToggle').addEventListener('click', () => {
+    const panel = $('bulkAddPanel');
+    const willOpen = panel.hidden;
+    if (willOpen) renderBulkPanel(); // 每次打開都重新整理，排掉剛剛已經加進庫存的項目
+    panel.hidden = !willOpen;
+    $('bulkAddToggle').setAttribute('aria-expanded', String(willOpen));
+    $('bulkAddToggle').textContent = `依種類批量加入材料　${willOpen ? '▴' : '▾'}`;
+  });
+
+  $('bulkAddPanel').addEventListener('click', e => {
+    const kindToggle = e.target.closest('.bulk-kind-toggle');
+    if (kindToggle) {
+      const group = kindToggle.nextElementSibling;
+      group.hidden = !group.hidden;
+      kindToggle.setAttribute('aria-expanded', String(!group.hidden));
+      kindToggle.querySelector('.arrow').textContent = group.hidden ? '▸' : '▾';
+      return;
+    }
+    if (e.target.id === 'bulkAddApply') {
+      const checked = [...$('bulkAddPanel').querySelectorAll('input[type=checkbox]:checked')].map(c => c.value);
+      if (!checked.length) return;
+      for (const name of checked) inventory[name] = inventory[name] ?? 1; // 預設數量 1，跟單筆搜尋加入一致，加進去再自己調整
+      saveInventory(); renderInventory(); renderBulkPanel();
+      if (hasCalculated) calc();
+    }
+  });
+
   // ---------- 右側：計算可製作物（分「我的最愛」／「所有道具」兩個分頁） ----------
   const resultState = { tab: 'all' }; // 'fav' 或 'all'；選過分頁之後，重算不會把使用者切回去
   let tabPicked = false; // 使用者是否手動點過分頁；還沒點過的話，第一次算完可以依有沒有最愛自動選一個

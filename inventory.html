@@ -60,6 +60,11 @@
           <input id="addSearch" type="search" autocomplete="off" placeholder="輸入材料或半成品名稱來加入庫存……">
           <div id="addSuggest" class="inv-add-suggest" hidden></div>
         </div>
+        <!-- 批量加入：金屬、布料、木材、皮革這種一整串升級鏈，不用一筆一筆打字搜尋，展開種類勾選就能一次全部加進去 -->
+        <div class="bulk-add">
+          <button type="button" id="bulkAddToggle" class="bulk-add-toggle" aria-expanded="false" aria-controls="bulkAddPanel">依種類批量加入材料　▾</button>
+          <div id="bulkAddPanel" class="bulk-add-panel" hidden></div>
+        </div>
         <div id="invList" class="inv-list"></div>
       </section>
 
@@ -79,6 +84,7 @@
 </main>
 
 <footer class="site-footer">
+  <div class="footer-disclaimer">非官方玩家工具</div>
   <span>資料整理：【愛麗莎】 紅花鰻魚丼 in 水手服同盟【巴哈姆特】 米小貓</span>
   <span id="build-meta"></span>
 </footer>

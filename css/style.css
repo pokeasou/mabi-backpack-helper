@@ -366,6 +366,8 @@ summary { cursor: pointer; }
 #coverage { padding-top: 15px; }
 
 .site-footer { font-size: .74rem; color: var(--text-3); border-top: 1px solid var(--line); padding: 20px var(--gutter) 84px; } /* 底部多留空間，避免右下角的最愛方塊蓋住頁尾文字 */
+/* 每一頁最下面都要有的聲明：這是玩家自製小工具，不是官方網站 */
+.footer-disclaimer { display: inline-block; font-size: .68rem; font-weight: 700; letter-spacing: .03em; color: var(--text-2); background: var(--surface-2); padding: 3px 10px; border-radius: 10px; margin-bottom: 10px; }
 .footer-baseline { margin-bottom: 10px; line-height: 1.7; }
 .footer-baseline strong { color: var(--text-2); }
 .footer-credit { display: flex; justify-content: space-between; gap: 15px; }
@@ -522,6 +524,30 @@ summary { cursor: pointer; }
 }
 .inv-add-suggest button { display: block; width: 100%; text-align: left; border: 0; background: none; color: var(--text); padding: 9px 14px; font-size: .85rem; }
 .inv-add-suggest button:hover { background: var(--surface-2); }
+
+/* 批量加入：展開「金屬」「布料」這種種類，勾選材料後一次全部加進庫存 */
+.bulk-add { margin-bottom: 18px; }
+.bulk-add-toggle {
+  width: 100%; text-align: left; border: 1px solid var(--line); background: var(--surface-3); color: var(--text-2);
+  padding: 10px 14px; border-radius: 6px; font-size: .84rem; cursor: pointer; transition: border-color .15s, color .15s;
+}
+.bulk-add-toggle:hover { border-color: var(--accent); color: var(--text); }
+.bulk-add-panel { margin-top: 8px; border: 1px solid var(--line); border-radius: 8px; padding: 10px; max-height: 340px; overflow-y: auto; }
+.bulk-kind + .bulk-kind { margin-top: 4px; }
+.bulk-kind-toggle {
+  display: flex; width: 100%; justify-content: space-between; align-items: center; gap: 8px;
+  border: 0; background: var(--surface-2); color: var(--text); padding: 9px 10px; border-radius: 5px;
+  font-size: .85rem; text-align: left; cursor: pointer;
+}
+.bulk-kind-toggle:hover { background: var(--surface-3); }
+.bulk-kind-toggle .n { font-size: .74rem; color: var(--text-3); margin-left: auto; margin-right: 4px; }
+.bulk-kind-toggle .arrow { color: var(--text-3); flex-shrink: 0; }
+.bulk-group { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 10px 6px 12px 16px; }
+.bulk-group[hidden] { display: none; } /* 上面 display:flex 的優先度跟瀏覽器內建的 [hidden] 一樣高，沒加這行收合就會失效 */
+.bulk-check { display: flex; align-items: center; gap: 6px; font-size: .84rem; color: var(--text); cursor: pointer; }
+.bulk-check input { accent-color: var(--accent); cursor: pointer; }
+.bulk-add-apply { display: block; width: 100%; margin-top: 10px; border: 0; background: var(--accent-strong); color: #fff; font-weight: 600; padding: 10px; border-radius: 6px; cursor: pointer; font-size: .86rem; }
+.bulk-add-apply:hover { filter: brightness(1.08); }
 
 .inv-table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; margin-bottom: 20px; }
 .inv-table th { text-align: left; font-size: .76rem; color: var(--text-2); font-weight: 500; padding: 10px 14px; border-bottom: 1px solid var(--line); background: var(--surface-2); }
